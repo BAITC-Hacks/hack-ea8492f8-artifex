@@ -1,0 +1,4 @@
+Synthetic reference for testing only. This is not a law or professional standard.
+
+1. An internal audit unit must review the annual audit plan and report its results to the board.
+2. The audit lead shall not approve operational transactions that the unit later audits.

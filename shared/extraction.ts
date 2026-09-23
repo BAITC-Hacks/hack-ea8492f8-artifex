@@ -129,12 +129,37 @@ export const ExtractionSchema = z
       .strict(),
   })
   .strict();
+export const SupplementarySchema = z
+  .object({
+    documents: z.array(SourceDocumentSchema.extend({ sha256: z.string() })).max(18),
+    referenceDocumentIds: z.array(z.string()),
+    operators: z.array(z.object({ name: z.string(), documentIds: z.array(z.string()) }).strict()),
+    checks: z
+      .array(
+        z
+          .object({
+            id: z.string(),
+            category: z.enum(['reference', 'operator']),
+            status: z.enum(['candidate_match', 'needs_review']),
+            title: z.string(),
+            explanation: z.string(),
+            recommendation: z.string(),
+            entityIds: z.array(z.string()),
+            evidence: z.array(SourceEvidenceSchema).min(1),
+          })
+          .strict(),
+      )
+      .max(500),
+    warnings: z.array(z.string()),
+  })
+  .strict();
 export const ExtractedPairSchema = z
   .object({
     schemaVersion: z.literal('2.0'),
     title: z.string().min(1),
     before: ExtractionSchema,
     after: ExtractionSchema,
+    supplementary: SupplementarySchema.optional(),
   })
   .strict();
 export type SourceDocument = z.infer<typeof SourceDocumentSchema>;
@@ -146,11 +171,24 @@ export type ExtractedEdge = z.infer<typeof ExtractedEdgeSchema>;
 export type ExtractedFunction = z.infer<typeof ExtractedFunctionSchema>;
 export type ExtractionIssue = z.infer<typeof ExtractionIssueSchema>;
 export type ExtractedPair = z.infer<typeof ExtractedPairSchema>;
+export type Supplementary = z.infer<typeof SupplementarySchema>;
 export const ExtractPairRequestSchema = z
   .object({
     title: z.string().min(1).max(200),
     mode: z.enum(['local', 'agentic']),
     before: ExtractionRequestSchema.omit({ mode: true }),
     after: ExtractionRequestSchema.omit({ mode: true }),
+    referenceDocuments: z.array(SourceDocumentSchema).max(6).default([]),
+    operators: z
+      .array(
+        z
+          .object({
+            name: z.string().min(1).max(160),
+            documents: z.array(SourceDocumentSchema).min(1).max(6),
+          })
+          .strict(),
+      )
+      .max(3)
+      .default([]),
   })
   .strict();

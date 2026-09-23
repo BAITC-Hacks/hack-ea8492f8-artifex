@@ -124,6 +124,21 @@ describe('API workflow', () => {
         before: revision,
         after: { ...revision, revision: { ...revision.revision, id: 'v2' } },
         mode: 'local',
+        referenceDocuments: [
+          { id: 'reference-1', title: 'Rule', text: '1. Finance must approve contracts.' },
+        ],
+        operators: [
+          {
+            name: 'Peer A',
+            documents: [
+              {
+                id: 'peer-1',
+                title: 'Peer structure',
+                text: '1. Департамент внешнего аудита (ДВА) осуществляет контроль.',
+              },
+            ],
+          },
+        ],
       }),
     });
     expect(started.status).toBe(202);
@@ -136,6 +151,9 @@ describe('API workflow', () => {
     }
     expect(job?.status).toBe('complete');
     expect(store.getExtraction(id)?.after.functions).toHaveLength(1);
+    expect(job?.result.supplementary?.checks.some((check) => check.category === 'reference')).toBe(true);
+    expect(job?.result.supplementary?.checks.some((check) => check.category === 'operator')).toBe(false);
+    expect(job?.result.supplementary?.documents).toHaveLength(2);
     const response = await fetch(`${base}/api/analyze`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -144,6 +162,9 @@ describe('API workflow', () => {
     expect(response.status).toBe(201);
     const run = await response.json();
     expect(run.result.extraction.before.functions).toHaveLength(1);
+    expect(await (await fetch(`${base}/api/runs/${run.result.id}/export/html`)).text()).toContain(
+      'Standards and other operators',
+    );
     expect(run.result.warnings.join(' ')).toContain('unassigned');
     const exported = await (await fetch(`${base}/api/runs/${run.result.id}/export/extraction`)).json();
     expect(exported.schemaVersion).toBe('2.0');

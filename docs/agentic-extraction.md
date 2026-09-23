@@ -2,7 +2,7 @@
 
 ## Scope and decisions
 
-Integrated against GitHub `main` at `494fa80` on branch `codex/agentic-org-json`.
+Integrated with GitHub `main` on branch `codex/agentic-org-json`.
 The earlier local Lineage workspace is preserved; the fetched Python application's
 Word loader is reused through `tools/document_bridge.py`. Its own UI and detectors
 remain independent and are still tested. No remote commits are rewritten.
@@ -75,6 +75,9 @@ Implementation references:
 
 This is a shape illustration, not a runnable fixture: `after` must contain the same
 revision structure. Generate a complete pair with `npm run extract -- --examples`.
+The pair may also include `supplementary`: hashed reference and peer documents,
+source-linked candidate checks, and warnings. These inputs do not change the
+before/after graph or function ownership.
 
 Nodes carry `id`, `kind`, `name`, `aliases`, `scopeId`, `origin`, `evidence`, and
 `functionIds`. Node kinds: `unit`, `position`, `external`, `group`.
@@ -107,7 +110,7 @@ remain unresolved rather than guessing which document wins.
 | --- | --- | --- |
 | POST | `/api/documents` | `{name, base64}` -> extracted source document |
 | POST | `/api/extract` | single `{revision, documents, mode}` -> revision JSON |
-| POST | `/api/extraction-jobs` | `{title, before, after, mode}` -> job ID (202) |
+| POST | `/api/extraction-jobs` | `{title, before, after, mode, referenceDocuments?, operators?}` -> job ID (202) |
 | GET | `/api/extraction-jobs/:id` | actual progress, failure, or complete pair |
 | GET | `/api/extractions/:id` | persisted pair JSON download |
 | GET | `/api/extraction-schema` | single-revision JSON Schema |
@@ -120,6 +123,16 @@ are persisted in SQLite; active jobs do not survive a server restart. Cached sta
 include prompt version, model, endpoint, complete source hash and input. Quotes and
 graph invariants are revalidated on reuse. No hidden automatic downgrade from a
 failed agentic request to local mode occurs. The UI offers local mode explicitly.
+
+Optional inputs accept up to six reference documents and three named peer
+operators with up to six structure documents each, limited to 300,000 extra
+characters total. Reference checks retrieve explicit obligation/prohibition
+clauses against after-responsibilities. Peer checks compare extracted unit names
+for created or composition-changed units. Both are lexical, cited candidates,
+not legal compliance or best-practice findings. The printable conclusion groups
+unassigned extraction flags into a cited sample; JSON and CSV retain the full
+backlog. A same-name unit with a different number of documented positions is
+marked `transformed` for review, not asserted to be legally reorganized.
 
 ## Bounds and privacy
 
@@ -157,3 +170,7 @@ Still limited: OCR and diagram understanding; full reconstruction of Word number
 implicit or cross-document precedence; a complete standard/law corpus; generalized
 semantic entity identity; automatic proof of lost duties. A disappeared clause is
 never sufficient to prove that the organization has stopped performing its function.
+The local full-edition regression yields unassigned responsibility candidates,
+so it cannot produce grounded functional continuity, duplication or conflict
+conclusions for those editions. Agentic extraction has mocked protocol coverage;
+live semantic quality needs an API key and labeled human evaluation.

@@ -1505,6 +1505,197 @@
         "metrics"
       ],
       "additionalProperties": false
+    },
+    "supplementary": {
+      "type": "object",
+      "properties": {
+        "documents": {
+          "maxItems": 18,
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 120
+              },
+              "title": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 300
+              },
+              "text": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 500000
+              },
+              "sourceUrl": {
+                "type": "string",
+                "format": "uri"
+              },
+              "ingestionNotes": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "sha256": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "id",
+              "title",
+              "text",
+              "sha256"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "referenceDocumentIds": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "operators": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "documentIds": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            },
+            "required": [
+              "name",
+              "documentIds"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "checks": {
+          "maxItems": 500,
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "category": {
+                "type": "string",
+                "enum": [
+                  "reference",
+                  "operator"
+                ]
+              },
+              "status": {
+                "type": "string",
+                "enum": [
+                  "candidate_match",
+                  "needs_review"
+                ]
+              },
+              "title": {
+                "type": "string"
+              },
+              "explanation": {
+                "type": "string"
+              },
+              "recommendation": {
+                "type": "string"
+              },
+              "entityIds": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "evidence": {
+                "minItems": 1,
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "documentId": {
+                      "type": "string"
+                    },
+                    "clauseId": {
+                      "type": "string"
+                    },
+                    "locator": {
+                      "type": "string"
+                    },
+                    "quote": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "span": {
+                      "type": "array",
+                      "prefixItems": [
+                        {
+                          "type": "integer",
+                          "minimum": 0,
+                          "maximum": 9007199254740991
+                        },
+                        {
+                          "type": "integer",
+                          "exclusiveMinimum": 0,
+                          "maximum": 9007199254740991
+                        }
+                      ],
+                      "items": false,
+                      "minItems": 2,
+                      "maxItems": 2
+                    }
+                  },
+                  "required": [
+                    "documentId",
+                    "clauseId",
+                    "locator",
+                    "quote",
+                    "span"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            },
+            "required": [
+              "id",
+              "category",
+              "status",
+              "title",
+              "explanation",
+              "recommendation",
+              "entityIds",
+              "evidence"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "warnings": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "documents",
+        "referenceDocumentIds",
+        "operators",
+        "checks",
+        "warnings"
+      ],
+      "additionalProperties": false
     }
   },
   "required": [

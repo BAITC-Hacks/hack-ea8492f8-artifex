@@ -2217,6 +2217,47 @@ textarea::placeholder {
 .document-revisions > section {
   min-width: 0;
 }
+.optional-sources {
+  padding: 22px 0;
+  border-bottom: 1px solid #dbe2dc;
+}
+.optional-sources .section-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 0 0 12px;
+}
+.optional-sources .section-heading:not(:first-child) {
+  margin-top: 26px;
+}
+.optional-sources h2 {
+  margin: 0;
+  font-size: 16px;
+}
+.optional-operator {
+  display: grid;
+  grid-template-columns: minmax(160px, 1fr) minmax(180px, 1fr) 34px;
+  align-items: end;
+  gap: 12px;
+  border-bottom: 1px solid #e5e9e6;
+  padding: 12px 0;
+}
+.optional-operator .document-upload {
+  margin: 0;
+}
+.optional-operator .document-file-list {
+  grid-column: 1 / -1;
+}
+@media (max-width: 680px) {
+  .optional-operator {
+    grid-template-columns: minmax(0, 1fr) 34px;
+  }
+  .optional-operator .document-upload {
+    grid-column: 1 / -1;
+    grid-row: 2;
+  }
+}
 .document-revisions h2 {
   font-size: 18px;
   margin: 0;

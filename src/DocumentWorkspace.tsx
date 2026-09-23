@@ -14,7 +14,14 @@ import { ExtractedPairSchema, type ExtractedPair, type SourceDocument } from '..
 import { api } from './api';
 
 type RevisionInput = { revision: { id: string; label: string; date: string }; documents: SourceDocument[] };
-type PairRequest = { title: string; before: RevisionInput; after: RevisionInput; mode: 'local' | 'agentic' };
+type PairRequest = {
+  title: string;
+  before: RevisionInput;
+  after: RevisionInput;
+  mode: 'local' | 'agentic';
+  referenceDocuments: SourceDocument[];
+  operators: { name: string; documents: SourceDocument[] }[];
+};
 type Job = {
   id: string;
   status: 'running' | 'complete' | 'failed';
@@ -41,13 +48,15 @@ export default function DocumentWorkspace({
     before: empty('before'),
     after: empty('after'),
     mode: 'local',
+    referenceDocuments: [],
+    operators: [],
   });
   const [job, setJob] = useState<Job | null>(null),
     [error, setError] = useState('');
   const [uploading, setUploading] = useState(false),
     [comparing, setComparing] = useState(false);
   const [side, setSide] = useState<'before' | 'after'>('after');
-  const [tab, setTab] = useState<'graph' | 'functions' | 'issues' | 'json'>('graph');
+  const [tab, setTab] = useState<'graph' | 'functions' | 'issues' | 'context' | 'json'>('graph');
   const [json, setJson] = useState(''),
     [search, setSearch] = useState('');
   const [selected, setSelected] = useState<string | null>(null);
@@ -78,6 +87,17 @@ export default function DocumentWorkspace({
                 revision: { ...pair.after.revision, date: pair.after.revision.date ?? '' },
                 documents: pair.after.documents.map(({ sha256: _hash, ...document }) => document),
               },
+              referenceDocuments:
+                pair.supplementary?.documents
+                  .filter((document) => pair.supplementary?.referenceDocumentIds.includes(document.id))
+                  .map(({ sha256: _hash, ...document }) => document) ?? [],
+              operators:
+                pair.supplementary?.operators.map((operator) => ({
+                  name: operator.name,
+                  documents: pair
+                    .supplementary!.documents.filter((document) => operator.documentIds.includes(document.id))
+                    .map(({ sha256: _hash, ...document }) => document),
+                })) ?? [],
             }));
           }
         })
@@ -109,6 +129,25 @@ export default function DocumentWorkspace({
     };
   }, [job?.id, job?.status]);
 
+  const readFiles = async (files: FileList) => {
+    const documents: SourceDocument[] = [];
+    for (const file of files) {
+      if (file.size > 8 * 1024 * 1024) throw new Error(`${file.name} exceeds 8 MB.`);
+      const base64 = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onerror = () => reject(new Error('Cannot read file.'));
+        reader.onload = () => resolve(String(reader.result).split(',')[1]);
+        reader.readAsDataURL(file);
+      });
+      documents.push(
+        await api<SourceDocument>('/api/documents', {
+          method: 'POST',
+          body: JSON.stringify({ name: file.name, base64 }),
+        }),
+      );
+    }
+    return documents;
+  };
   const upload = async (side: 'before' | 'after', files: FileList | null) => {
     if (!files?.length) return;
     setUploading(true);
@@ -116,22 +155,7 @@ export default function DocumentWorkspace({
     try {
       if (files.length + request[side].documents.length > 12)
         throw new Error('Maximum 12 documents per revision.');
-      const documents: SourceDocument[] = [];
-      for (const file of files) {
-        if (file.size > 8 * 1024 * 1024) throw new Error(`${file.name} exceeds 8 MB.`);
-        const base64 = await new Promise<string>((resolve, reject) => {
-          const reader = new FileReader();
-          reader.onerror = () => reject(new Error('Cannot read file.'));
-          reader.onload = () => resolve(String(reader.result).split(',')[1]);
-          reader.readAsDataURL(file);
-        });
-        documents.push(
-          await api<SourceDocument>('/api/documents', {
-            method: 'POST',
-            body: JSON.stringify({ name: file.name, base64 }),
-          }),
-        );
-      }
+      const documents = await readFiles(files);
       setRequest((old) => ({
         ...old,
         [side]: {
@@ -145,13 +169,55 @@ export default function DocumentWorkspace({
       setUploading(false);
     }
   };
+  const uploadOptional = async (kind: 'reference' | 'operator', files: FileList | null, index = 0) => {
+    if (!files?.length) return;
+    setUploading(true);
+    setError('');
+    try {
+      const current = kind === 'reference' ? request.referenceDocuments : request.operators[index].documents;
+      if (files.length + current.length > 6) throw new Error('Maximum 6 documents in this group.');
+      const documents = (await readFiles(files)).map((document) => ({
+        ...document,
+        id: `${kind}-${index}:${document.id}`,
+      }));
+      setRequest((old) =>
+        kind === 'reference'
+          ? {
+              ...old,
+              referenceDocuments: [
+                ...new Map([...old.referenceDocuments, ...documents].map((d) => [d.id, d])).values(),
+              ],
+            }
+          : {
+              ...old,
+              operators: old.operators.map((operator, i) =>
+                i === index
+                  ? {
+                      ...operator,
+                      documents: [
+                        ...new Map([...operator.documents, ...documents].map((d) => [d.id, d])).values(),
+                      ],
+                    }
+                  : operator,
+              ),
+            },
+      );
+    } catch (e) {
+      setError((e as Error).message);
+    } finally {
+      setUploading(false);
+    }
+  };
   const start = async () => {
     setError('');
     setNotice('');
     try {
       const { id } = await api<{ id: string }>('/api/extraction-jobs', {
         method: 'POST',
-        body: JSON.stringify(request),
+        body: JSON.stringify({
+          ...request,
+          operators: request.operators.filter((operator) => operator.documents.length),
+        }),
       });
       setJob({ id, status: 'running', progress: 'Starting extraction.' });
       setJson('');
@@ -197,6 +263,7 @@ export default function DocumentWorkspace({
     }
   };
   const result = job?.result?.[side];
+  const supplementary = job?.result?.supplementary;
   const node = result?.graph.nodes.find((n) => n.id === selected);
   const blocked = running || uploading || comparing;
   return (
@@ -215,7 +282,11 @@ export default function DocumentWorkspace({
           disabled={blocked}
           onClick={async () => {
             try {
-              setRequest(await api<PairRequest>('/api/document-example'));
+              setRequest({
+                ...(await api<PairRequest>('/api/document-example')),
+                referenceDocuments: [],
+                operators: [],
+              });
               setError('');
             } catch (e) {
               setError((e as Error).message);
@@ -316,6 +387,136 @@ export default function DocumentWorkspace({
           </section>
         ))}
       </div>
+      <section className="optional-sources">
+        <div className="section-heading">
+          <h2>Standards and regulations</h2>
+        </div>
+        <label className="document-upload">
+          <Upload size={18} /> Add reference documents
+          <input
+            type="file"
+            multiple
+            accept=".txt,.md,.docx,.pdf,.xlsx"
+            aria-label="Upload reference documents"
+            disabled={blocked}
+            onChange={(e) => {
+              void uploadOptional('reference', e.target.files);
+              e.target.value = '';
+            }}
+          />
+        </label>
+        <ul className="document-file-list">
+          {request.referenceDocuments.map((document) => (
+            <li key={document.id}>
+              <strong>{document.title}</strong>
+              <button
+                className="icon-button"
+                disabled={blocked}
+                title="Remove document"
+                aria-label={`Remove ${document.title}`}
+                onClick={() =>
+                  setRequest((old) => ({
+                    ...old,
+                    referenceDocuments: old.referenceDocuments.filter((item) => item.id !== document.id),
+                  }))
+                }
+              >
+                <Trash2 size={15} />
+              </button>
+            </li>
+          ))}
+        </ul>
+        <div className="section-heading">
+          <h2>Other operators</h2>
+          <button
+            className="button secondary"
+            disabled={blocked || request.operators.length >= 3}
+            onClick={() =>
+              setRequest((old) => ({
+                ...old,
+                operators: [
+                  ...old.operators,
+                  { name: `Operator ${old.operators.length + 1}`, documents: [] },
+                ],
+              }))
+            }
+          >
+            Add operator
+          </button>
+        </div>
+        {request.operators.map((operator, index) => (
+          <div className="optional-operator" key={index}>
+            <label className="field-label">
+              Operator name
+              <input
+                value={operator.name}
+                disabled={blocked}
+                onChange={(e) =>
+                  setRequest((old) => ({
+                    ...old,
+                    operators: old.operators.map((item, i) =>
+                      i === index ? { ...item, name: e.target.value } : item,
+                    ),
+                  }))
+                }
+              />
+            </label>
+            <label className="document-upload">
+              <Upload size={18} /> Add structure documents
+              <input
+                type="file"
+                multiple
+                accept=".txt,.md,.docx,.pdf,.xlsx"
+                aria-label={`Upload documents for ${operator.name}`}
+                disabled={blocked}
+                onChange={(e) => {
+                  void uploadOptional('operator', e.target.files, index);
+                  e.target.value = '';
+                }}
+              />
+            </label>
+            <button
+              className="icon-button"
+              disabled={blocked}
+              title="Remove operator"
+              aria-label={`Remove ${operator.name}`}
+              onClick={() =>
+                setRequest((old) => ({ ...old, operators: old.operators.filter((_, i) => i !== index) }))
+              }
+            >
+              <Trash2 size={15} />
+            </button>
+            <ul className="document-file-list">
+              {operator.documents.map((document) => (
+                <li key={document.id}>
+                  <strong>{document.title}</strong>
+                  <button
+                    className="icon-button"
+                    disabled={blocked}
+                    title="Remove document"
+                    aria-label={`Remove ${document.title}`}
+                    onClick={() =>
+                      setRequest((old) => ({
+                        ...old,
+                        operators: old.operators.map((item, i) =>
+                          i === index
+                            ? {
+                                ...item,
+                                documents: item.documents.filter((entry) => entry.id !== document.id),
+                              }
+                            : item,
+                        ),
+                      }))
+                    }
+                  >
+                    <Trash2 size={15} />
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))}
+      </section>
       <div className="document-commandbar">
         <div className="segmented">
           <button
@@ -424,7 +625,15 @@ export default function DocumentWorkspace({
           </div>
           <div className="document-commandbar">
             <div className="segmented">
-              {(['graph', 'functions', 'issues', 'json'] as const).map((value) => (
+              {(
+                [
+                  'graph',
+                  'functions',
+                  'issues',
+                  ...(supplementary ? ['context' as const] : []),
+                  'json',
+                ] as const
+              ).map((value) => (
                 <button
                   key={value}
                   className={tab === value ? 'selected' : ''}
@@ -569,6 +778,39 @@ export default function DocumentWorkspace({
                     ))}
                   </article>
                 ))}
+            </div>
+          )}
+          {tab === 'context' && supplementary && (
+            <div className="extraction-issues">
+              {supplementary.warnings.map((warning) => (
+                <p className="muted" key={warning}>
+                  {warning}
+                </p>
+              ))}
+              {supplementary.checks.map((check) => (
+                <article key={check.id}>
+                  <strong>{check.title}</strong>{' '}
+                  <span className="muted">
+                    {check.category} · {check.status.replaceAll('_', ' ')}
+                  </span>
+                  <p>{check.explanation}</p>
+                  <p>{check.recommendation}</p>
+                  {check.evidence.map((e, i) => (
+                    <button
+                      key={i}
+                      className="text-button"
+                      onClick={() =>
+                        setSource({
+                          title: `${supplementary.documents.find((document) => document.id === e.documentId)?.title ?? result.documents.find((document) => document.id === e.documentId)?.title ?? e.documentId}, ${e.locator}`,
+                          quote: e.quote,
+                        })
+                      }
+                    >
+                      Clause {e.locator}
+                    </button>
+                  ))}
+                </article>
+              ))}
             </div>
           )}
           {tab === 'json' && (

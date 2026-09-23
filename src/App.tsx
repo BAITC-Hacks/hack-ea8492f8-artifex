@@ -76,6 +76,7 @@ type History = { id: string; title: string; createdAt: string }[];
 type SelectedDoc = { side: 'before' | 'after'; id: string; quote?: string };
 const labels: Record<string, string> = {
   preserved: 'Preserved',
+  transformed: 'Transformed',
   transferred: 'Transferred',
   split: 'Split',
   merged: 'Merged',
@@ -1390,23 +1391,50 @@ export default function App() {
                       <th>After</th>
                       <th>Change</th>
                       <th>Mapping basis</th>
+                      <th>Sources</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {result.departmentChanges.map((d, i) => (
-                      <tr key={i}>
-                        <td>
-                          {d.beforeIds.map((id) => departmentName('before', id)).join(', ') || 'None mapped'}
-                        </td>
-                        <td>
-                          {d.afterIds.map((id) => departmentName('after', id)).join(', ') || 'None mapped'}
-                        </td>
-                        <td>
-                          <Badge value={d.status} />
-                        </td>
-                        <td className="muted">{d.basis}</td>
-                      </tr>
-                    ))}
+                    {result.departmentChanges.map((d, i) => {
+                      const citations = (d.evidence ?? []).filter(
+                        (e, index, all) => all.findIndex((ref) => ref.snapshot === e.snapshot) === index,
+                      );
+                      return (
+                        <tr key={i}>
+                          <td>
+                            {d.beforeIds.map((id) => departmentName('before', id)).join(', ') ||
+                              'None mapped'}
+                          </td>
+                          <td>
+                            {d.afterIds.map((id) => departmentName('after', id)).join(', ') || 'None mapped'}
+                          </td>
+                          <td>
+                            <Badge value={d.status} />
+                          </td>
+                          <td className="muted" title={d.reason}>
+                            {d.basis}
+                          </td>
+                          <td>
+                            {citations.length ? (
+                              citations.map((e) => (
+                                <button
+                                  className="source-link compact"
+                                  key={`${e.snapshot}:${e.documentId}:${e.locator}`}
+                                  title={e.quote}
+                                  onClick={() =>
+                                    openSource({ side: e.snapshot, id: e.documentId, quote: e.quote })
+                                  }
+                                >
+                                  <FileText size={14} /> {e.snapshot} §{e.locator}
+                                </button>
+                              ))
+                            ) : (
+                              <span className="muted">No cited source</span>
+                            )}
+                          </td>
+                        </tr>
+                      );
+                    })}
                   </tbody>
                 </table>
               </div>

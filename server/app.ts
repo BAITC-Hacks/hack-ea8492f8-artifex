@@ -9,6 +9,7 @@ import { normalizeGraph } from './normalization.js';
 import { demoGraph } from './demo.js';
 import { Store } from './store.js';
 import { csvReport, htmlReport } from './report.js';
+import { buildSupplementary } from './extraction/supplementary.js';
 import { randomUUID } from 'node:crypto';
 import {
   ExtractedPairSchema,
@@ -120,6 +121,14 @@ export function createApp(store = new Store()) {
             },
           );
           job.result = { schemaVersion: '2.0', title: request.title, before, after };
+          if (request.referenceDocuments.length || request.operators.length) {
+            job.progress = 'Comparing optional sources.';
+            job.result.supplementary = buildSupplementary(
+              job.result,
+              request.referenceDocuments,
+              request.operators,
+            );
+          }
           store.saveExtraction(job.id, job.result);
           job.status = 'complete';
           job.progress = 'JSON ready for review.';
