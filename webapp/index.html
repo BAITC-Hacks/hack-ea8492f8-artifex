@@ -4,29 +4,32 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Artifex — анализ организационных изменений</title>
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%23137a52'/><path d='M9 22l7-12 7 12' stroke='%23fff' stroke-width='2.2' fill='none' stroke-linejoin='round'/><path d='M12 18h8' stroke='%23fff' stroke-width='2.2' stroke-linecap='round'/></svg>">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%2318181b'/><path d='M9 22l7-12 7 12' stroke='%23fff' stroke-width='2.2' fill='none' stroke-linejoin='round'/><path d='M12 18h8' stroke='%23fff' stroke-width='2.2' stroke-linecap='round'/></svg>">
 <style>
 /* ═══ токены ═══════════════════════════════════════════════════════════════
-   Рабочее место аналитика: светлая основа, один акцент, цвет только там,
-   где он несёт смысл — последствие, подтверждённость, статус подразделения. */
+   Правило палитры: цвет означает состояние, и ничего больше.
+   Фирменный цвет намеренно нейтрален — графит. Любой цветной бренд отнимал
+   бы смысл у статусов: зелёный уже значит «подтверждено» и «сохранено»,
+   янтарный — «требует проверки» и «преобразовано», красный — «упразднено»,
+   синий — «создано». Бренду в этом наборе места нет, поэтому он без цвета. */
 :root{
-  --bg:#f6f7f6; --panel:#fff; --sunk:#f3f5f4; --line:#e4e8e6; --line2:#d3d9d6;
-  --fg:#12171a; --fg2:#4a5560; --fg3:#7d8891;
-  --brand:#137a52; --brand2:#1d8f63; --bfg:#fff; --bsoft:#e8f4ee;
+  --bg:#fafafa; --panel:#fff; --sunk:#f5f5f6; --line:#ebebed; --line2:#dcdce0;
+  --fg:#0a0a0b; --fg2:#46464d; --fg3:#7a7a84;
+  --brand:#18181b; --brand2:#3f3f46; --bfg:#fff; --bsoft:#f0f0f2;
   --c1:#b42318; --c1s:#fef3f2; --c2:#b54708; --c2s:#fffaeb;
-  --c3:#946200; --c3s:#fdf8e8; --c4:#175cd3; --c4s:#eff6ff;
+  --c3:#a16207; --c3s:#fefaec; --c4:#175cd3; --c4s:#eff6ff;
   --c5:#5a6472; --c5s:#f2f4f6; --ok:#067647; --oks:#ecfdf3;
-  --glow:30%; --mono:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,monospace;
+  --glow:34%; --mono:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,monospace;
   --mx:50vw; --my:-20vh; --rail:246px;
 }
 html[data-theme="dark"]{
-  --bg:#0a0d0c; --panel:#111513; --sunk:#171c19; --line:#212825; --line2:#2f3a35;
-  --fg:#eef2ef; --fg2:#b2bcb6; --fg3:#7e8a84;
-  --brand:#4fbf8b; --brand2:#6fd3a3; --bfg:#07120d; --bsoft:#0f2419;
+  --bg:#09090b; --panel:#111113; --sunk:#17171a; --line:#232327; --line2:#31313a;
+  --fg:#fafafa; --fg2:#b4b4bb; --fg3:#7e7e88;
+  --brand:#e4e4e7; --brand2:#a1a1aa; --bfg:#09090b; --bsoft:#1c1c20;
   --c1:#fa9188; --c1s:#20100f; --c2:#fcb050; --c2s:#211607;
   --c3:#e3bc57; --c3s:#1e1907; --c4:#7db6ff; --c4s:#0b1726;
   --c5:#98a2b3; --c5s:#161a23; --ok:#4cd393; --oks:#07201a;
-  --glow:70%;
+  --glow:58%;
 }
 *{box-sizing:border-box}
 html{-webkit-text-size-adjust:100%}
@@ -259,7 +262,7 @@ body{margin:0;background:var(--bg);color:var(--fg);
 .unit .link b{font-weight:620}
 .unit .link em{display:block;font-style:normal;color:var(--fg3);font-size:11px;margin-top:3px}
 .unit .link.none{border-left-color:var(--c1);color:var(--c1)}
-.unit .link.new{border-left-color:var(--brand);color:var(--brand)}
+.unit .link.new{border-left-color:var(--c4);color:var(--c4)}
 .wires path{fill:none;stroke-linecap:round;transition:opacity .2s}
 .wires .stub{stroke-dasharray:3 5}
 .wires .fade{opacity:.12}
@@ -499,7 +502,7 @@ body{margin:0;background:var(--bg);color:var(--fg);
         <div class="legend">
           <span><i style="background:var(--ok)"></i>сохранено</span>
           <span><i style="background:var(--c3)"></i>преобразовано</span>
-          <span><i style="background:var(--brand)"></i>создано</span>
+          <span><i style="background:var(--c4)"></i>создано</span>
           <span><i style="background:var(--c1)"></i>упразднено</span>
         </div>
         <div class="stage" id="stage">
@@ -548,8 +551,8 @@ const ROLE = { before:"в прежней редакции", after:"в новой
   requirement:"сохранившееся требование", reference_source:"ссылающийся пункт", reference_target:"адресат ссылки" };
 const RCLS = { before:"b4", after:"af", prohibition:"pro", requirement:"req",
   reference_source:"af", reference_target:"pro" };
-const GCOLOR = { not_done:"var(--c1)", blurred:"var(--c2)", contradiction:"var(--brand)",
-  softened:"var(--c3)", tracked:"var(--c5)" };
+const GCOLOR = { not_done:"var(--c1)", blurred:"var(--c2)", contradiction:"var(--c4)",
+  softened:"var(--c3)", tracked:"var(--c5)", structure:"var(--fg2)" };
 const ICON = {
   proven:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7" stroke-linecap="round" stroke-linejoin="round"/></svg>',
   check:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"><path d="M12 17h.01M9.2 9a3 3 0 1 1 4 2.8c-.7.3-1.2 1-1.2 1.8v.4" stroke-linecap="round"/></svg>',
@@ -800,7 +803,7 @@ function draw(raw) {
 const UST = {
   preserved:  ["сохранено",     "var(--ok)",    "var(--oks)"],
   transformed:["преобразовано", "var(--c3)",    "var(--c3s)"],
-  created:    ["создано",       "var(--brand)", "var(--bsoft)"],
+  created:    ["создано",       "var(--c4)",    "var(--c4s)"],
   abolished:  ["упразднено",    "var(--c1)",    "var(--c1s)"]
 };
 function partnerOf(n) {
@@ -942,8 +945,8 @@ function wires() {
   for (const n of DATA.structure.after.filter(x => x.status === "created")) {
     const b = find(n.id, "after"); if (!b) continue;
     const q = at(b);
-    parts.push(`<path class="stub" d="M${q.l - 44} ${q.y} h44" stroke="var(--brand)" stroke-width="1.6" opacity=".7" data-link="${esc(n.id)}"></path>
-      <circle cx="${q.l - 50}" cy="${q.y}" r="3.5" fill="var(--brand)" opacity=".85" data-link="${esc(n.id)}"></circle>`);
+    parts.push(`<path class="stub" d="M${q.l - 44} ${q.y} h44" stroke="var(--c4)" stroke-width="1.6" opacity=".7" data-link="${esc(n.id)}"></path>
+      <circle cx="${q.l - 50}" cy="${q.y}" r="3.5" fill="var(--c4)" opacity=".85" data-link="${esc(n.id)}"></circle>`);
   }
   svg.innerHTML = parts.join("");
 }
