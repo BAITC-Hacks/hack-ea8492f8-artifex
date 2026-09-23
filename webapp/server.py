@@ -8,6 +8,7 @@
 """
 import argparse
 import json
+import tempfile
 import sys
 import webbrowser
 from email.parser import BytesParser
@@ -32,12 +33,14 @@ PAGE = ROOT / "webapp" / "index.html"
 def to_text(name: str, blob: bytes) -> str:
     """Файл → нормализованный текст. .docx читается без зависимостей."""
     if name.lower().endswith(".docx"):
-        tmp = ROOT / ".upload.tmp"
-        tmp.write_bytes(blob)
+        # Сервер многопоточный: общий временный файл ломал бы параллельные загрузки.
+        with tempfile.NamedTemporaryFile(suffix=".docx", delete=False) as fh:
+            fh.write(blob)
+            path = fh.name
         try:
-            text, _ = read_docx(str(tmp))
+            text, _ = read_docx(path)
         finally:
-            tmp.unlink(missing_ok=True)
+            Path(path).unlink(missing_ok=True)
         return text
     return blob.decode("utf-8", "replace")
 
@@ -51,10 +54,16 @@ def build(side_files, doc_id, title):
     text = "\n".join(chunks)
     clauses = parse_text(text, doc_id)
     numbered = sum(1 for line in text.splitlines() if CLAUSE_RE.match(line))
+    seen, collisions = set(), 0
+    for c in clauses:
+        if c.number in seen:
+            collisions += 1
+        seen.add(c.number)
     return {
         "doc_id": doc_id, "title": title, "text": text,
         "files": [n for n, _ in side_files],
         "clauses": len(clauses), "numbered": numbered,
+        "collisions": collisions,
     }, clauses
 
 

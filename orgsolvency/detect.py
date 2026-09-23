@@ -18,7 +18,8 @@ PROVIDER_ON = False  # заполняется в run(): включён ли сл
 
 def _ev(c, role):
     return {"doc_id": c.doc_id, "clause": c.number, "quote": c.text,
-            "span": list(c.span), "role": role}
+            "span": list(c.span), "role": role, "file": c.source_file,
+            "ref": c.ref}
 
 
 def _f(fid, ftype, rule, sev, statement, evidence, trace, conf=1.0, engine="правила"):
@@ -118,10 +119,10 @@ def capability_changes(before, after):
         if a is None:
             out.append(_f(
                 f"L-{b.number}", "lost", "R-LOST-01", "high",
-                f"Функция из п. {b.number} ({b.owner}) не закреплена ни за одним "
-                f"подразделением в новой редакции",
+                f"Функция из п. {b.number} ({b.owner_label}) не закреплена "
+                f"ни за одним подразделением в новой редакции",
                 [_ev(b, "before")],
-                [f"владелец в ред. «до»: {b.owner}",
+                [f"владелец в ред. «до»: {b.owner_label}",
                  f"в ред. «после» нет функции со сходством ≥ {SIM_SAME}",
                  "полоса неопределённости проверена моделью: совпадений нет"
                  if PROVIDER_ON else
@@ -130,7 +131,8 @@ def capability_changes(before, after):
         elif a.owner != b.owner:
             out.append(_f(
                 f"T-{b.number}", "transferred", "R-TRANS-01", "info",
-                f"Функция передана: {b.owner} (п. {b.number}) → {a.owner} (п. {a.number})",
+                f"Функция передана: {b.owner_label} (п. {b.number}) → "
+                f"{a.owner_label} (п. {a.number})",
                 [_ev(b, "before"), _ev(a, "after")],
                 [f"сходство формулировок {sim:.2f} ({via})",
                  "владелец изменился → не потеря"],
@@ -150,8 +152,8 @@ def duplicates(clauses):
                 continue
             out.append(_f(
                 f"D-{x.number}-{y.number}", "duplicated", "R-DUP-01", "medium",
-                f"Одна и та же функция закреплена за {x.owner} (п. {x.number}) "
-                f"и {y.owner} (п. {y.number})",
+                f"Одна функция закреплена дважды — {x.owner_label}, п. {x.number} "
+                f"и {y.owner_label}, п. {y.number}",
                 [_ev(x, "after"), _ev(y, "after")],
                 [f"сходство формулировок {sim:.2f} ≥ {SIM_DUP}",
                  "владельцы различны и не связаны отношением подчинения"],
@@ -166,7 +168,7 @@ def collisions(clauses):
     покрытию предмета каждого запрещённого действия, а не по сходству абзацев:
     абзац запрета длинный, и мера Жаккара его размывает.
     """
-    out = []
+    out, seen = [], {}
     acts = []
     for ban in [c for c in clauses if c.kind == "prohibition"]:
         for piece in ban.text.split(";"):
@@ -186,8 +188,10 @@ def collisions(clauses):
             cover = len(act_tok & c.tokens) / len(act_tok)
             if cover < COVER_COLLIDE or (verb and verb not in c.tokens):
                 continue
+            seen[c.cid] = seen.get(c.cid, 0) + 1
+            suffix = "" if seen[c.cid] == 1 else f"-{seen[c.cid]}"
             out.append(_f(
-                f"C-{c.number}", "collision", "R-COLL-01", "high",
+                f"C-{c.number}{suffix}", "collision", "R-COLL-01", "high",
                 f"Функция из п. {c.number} описывает действие, запрещённое п. {ban.number}",
                 [_ev(c, "after"), _ev(ban, "prohibition")],
                 [f"запрещённое действие: «{piece[:70]}»",

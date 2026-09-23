@@ -31,6 +31,14 @@ UNITS = {
     "департамента непрерывного мониторинга": "DNM",
 }
 
+# Внутренний идентификатор латиницей, в тексте вывода — как в документе.
+UNIT_LABEL = {
+    "DITAAD": "ДИТААД", "DOA": "ДОА", "DNM": "ДНМ", "DKKM": "ДККМ",
+    "CAE": "Главный аудитор", "STAFF": "работники БВА",
+    "DIR_IA_LINE": "Директор направления внутреннего аудита",
+    "DEPT_DIRS": "директоры департаментов", "COMPANY": "Общество",
+}
+
 STOP = set("""и в во на по с со к ко для о об при не а но также том числе иных иные иной
 其 их его ее её этом этих том та те то тот как что чем чтобы или либо же бы ли из за
 до от через над под между перед после в_т_ч рамках части целях случае соответствии
@@ -63,10 +71,24 @@ class Clause:
     span: tuple
     scope: str = ""          # владелец, унаследованный от заголовка раздела
     chapter: str = ""
+    source_file: str = ""    # имя файла: в комплекте из нескольких документов
+                             # номера пунктов повторяются, и ссылка без имени
+                             # файла перестаёт быть однозначной
 
     @property
     def cid(self) -> str:
-        return f"{self.doc_id}:{self.number}"
+        return f"{self.doc_id}:{self.source_file}:{self.number}"
+
+    @property
+    def owner_label(self) -> str:
+        """Владелец так, как он назван в документе, а не внутренним кодом."""
+        uid = self.owner
+        return UNIT_LABEL.get(uid, uid)
+
+    @property
+    def ref(self) -> str:
+        """Человекочитаемая ссылка для цитаты."""
+        return f"{self.source_file} · п. {self.number}" if self.source_file else f"п. {self.number}"
 
     @property
     def tokens(self) -> set:
@@ -139,10 +161,14 @@ def parse_text(raw: str, doc_id: str = "unknown") -> list:
             doc_id = line.split(":", 1)[1].strip()
             break
 
-    clauses, scope_by_prefix, offset = [], {}, 0
+    clauses, scope_by_prefix, offset, current_file = [], {}, 0, ""
     for line in raw.splitlines(keepends=True):
         start, offset = offset, offset + len(line)
         stripped = line.strip()
+        if stripped.startswith("# файл:"):
+            current_file = stripped.split(":", 1)[1].strip()
+            scope_by_prefix = {}   # нумерация разделов у каждого файла своя
+            continue
         if not stripped or stripped.startswith("#"):
             continue
         m = CLAUSE_RE.match(stripped)
@@ -165,7 +191,7 @@ def parse_text(raw: str, doc_id: str = "unknown") -> list:
         col = stripped.find(text)
         clauses.append(Clause(doc_id, number, text,
                               (start + col, start + col + len(text)),
-                              scope, chapter))
+                              scope, chapter, current_file))
     return clauses
 
 
