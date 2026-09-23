@@ -1,0 +1,27 @@
+# данные заказчика не коммитим
+data/
+*.docx
+*.pdf
+*.xlsx
+!docs/**/*.md
+
+# кэш извлечения
+.cache/
+*.sqlite
+
+# окружение
+.venv/
+venv/
+__pycache__/
+*.pyc
+node_modules/
+.env
+.env.*
+!.env.example
+
+# ос
+.DS_Store
+
+# служебные каталоги агентов
+.omc/
+.claude/

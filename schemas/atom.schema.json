@@ -1,0 +1,81 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://artifex.local/schemas/atom.schema.json",
+  "title": "FunctionAtom",
+  "description": "Atomic unit of analysis: one function/right/duty asserted by one clause.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["atom_id", "doc_id", "clause", "span", "quote", "subject", "predicate", "object", "modality"],
+  "properties": {
+    "atom_id": {
+      "type": "string",
+      "description": "Stable id: sha1(doc_id + clause + predicate + object)[:12].",
+      "pattern": "^[a-f0-9]{12}$"
+    },
+    "doc_id": {
+      "type": "string",
+      "description": "Document identifier, e.g. 'ia_charter_rev8'."
+    },
+    "clause": {
+      "type": "string",
+      "description": "Clause number exactly as printed, e.g. '5.6.3', '2.3.1ж', '3.4а'."
+    },
+    "span": {
+      "type": "array",
+      "description": "[start, end) character offsets in the normalized plain text of doc_id.",
+      "items": { "type": "integer", "minimum": 0 },
+      "minItems": 2,
+      "maxItems": 2
+    },
+    "quote": {
+      "type": "string",
+      "description": "Verbatim source text of the span. Never paraphrased.",
+      "minLength": 1
+    },
+    "subject": {
+      "type": "string",
+      "description": "Who holds the function, as written (resolved to unit_id separately)."
+    },
+    "subject_unit_id": {
+      "type": ["string", "null"],
+      "description": "Resolved organizational unit or position, null if unassigned."
+    },
+    "predicate": {
+      "type": "string",
+      "description": "Normalized action verb from the ontology, e.g. 'контролировать', 'согласовывать'."
+    },
+    "object": {
+      "type": "string",
+      "description": "What the action applies to, normalized."
+    },
+    "qualifier": {
+      "type": ["string", "null"],
+      "description": "Scope or periodicity narrowing the function, e.g. 'на ежеквартальной основе'. Part of identity, not noise."
+    },
+    "modality": {
+      "type": "string",
+      "description": "Strength of the norm. Ordered lattice: обязан > должен > осуществляется > может > вправе.",
+      "enum": ["обязан", "должен", "осуществляется", "может", "вправе", "запрещено"]
+    },
+    "kind": {
+      "type": "string",
+      "enum": ["функция", "право", "обязанность", "запрет", "цель", "задача"],
+      "default": "функция"
+    },
+    "canonical_id": {
+      "type": ["string", "null"],
+      "description": "Cluster id shared by atoms expressing the same function across documents."
+    },
+    "extraction": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "model": { "type": "string" },
+        "prompt_version": { "type": "string" },
+        "clause_hash": { "type": "string" },
+        "confidence": { "type": "number", "minimum": 0, "maximum": 1 }
+      },
+      "description": "Provenance of the extraction, for reproducible replay."
+    }
+  }
+}

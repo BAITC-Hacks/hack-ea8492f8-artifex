@@ -1,0 +1,108 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://artifex.local/schemas/finding.schema.json",
+  "title": "Finding",
+  "description": "One deviation produced by a deterministic rule over the function graph.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["finding_id", "type", "rule_id", "severity", "statement", "evidence"],
+  "properties": {
+    "finding_id": { "type": "string" },
+    "type": {
+      "type": "string",
+      "enum": [
+        "lost",
+        "transferred",
+        "weakened",
+        "duplicated",
+        "orphan",
+        "collision",
+        "conflict_of_interest",
+        "broken_reference",
+        "unit_created",
+        "unit_abolished",
+        "unit_transformed"
+      ]
+    },
+    "rule_id": {
+      "type": "string",
+      "description": "Rule that fired, e.g. 'R-LOST-01'. Links the finding to an auditable rule definition."
+    },
+    "severity": {
+      "type": "string",
+      "enum": ["critical", "high", "medium", "low", "info"]
+    },
+    "statement": {
+      "type": "string",
+      "description": "One sentence, user-facing. Must be entailed by the cited evidence; the grounding gate drops it otherwise."
+    },
+    "evidence": {
+      "type": "array",
+      "description": "At least one citation. A finding with no evidence is never emitted.",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["doc_id", "clause", "quote"],
+        "properties": {
+          "doc_id": { "type": "string" },
+          "clause": { "type": "string" },
+          "quote": { "type": "string", "minLength": 1 },
+          "span": {
+            "type": "array",
+            "items": { "type": "integer", "minimum": 0 },
+            "minItems": 2,
+            "maxItems": 2
+          },
+          "role": {
+            "type": "string",
+            "enum": ["before", "after", "prohibition", "requirement", "reference_source", "reference_target"],
+            "description": "Why this citation matters for the rule."
+          }
+        }
+      }
+    },
+    "atoms": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "atom_ids the rule consumed."
+    },
+    "units": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "unit_ids involved."
+    },
+    "trace": {
+      "type": "array",
+      "description": "Derivation chain shown to the user instead of a bare verdict.",
+      "items": { "type": "string" }
+    },
+    "confidence": { "type": "number", "minimum": 0, "maximum": 1 },
+    "falsification": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["attempted", "survived"],
+      "properties": {
+        "attempted": { "type": "boolean" },
+        "survived": { "type": "boolean" },
+        "counter_candidates": {
+          "type": "array",
+          "description": "Clauses checked as possible refutations, and why each was rejected.",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "doc_id": { "type": "string" },
+              "clause": { "type": "string" },
+              "rejected_because": { "type": "string" }
+            }
+          }
+        }
+      }
+    },
+    "recommendation": {
+      "type": ["string", "null"],
+      "description": "Advisory only. Per constraint §9, conclusions require review by a responsible officer."
+    }
+  }
+}

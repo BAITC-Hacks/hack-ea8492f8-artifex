@@ -1,0 +1,361 @@
+# Золотой набор отклонений: Положение о внутреннем аудите, ред.8 → ред.9
+#
+# Разметка выполнена вручную по документам, предоставленным организатором.
+# Назначение: целевой результат прогона и основа метрик precision/recall.
+# Разбор с обоснованием: ../docs/case-analysis.md
+#
+# Правило работы с файлом: находка считается зачтённой, только если совпали
+# type И все clause в evidence. Совпадение по смыслу без верной ссылки не зачитывается.
+
+meta:
+  version: 1
+  documents:
+    - doc_id: ia_charter_rev8
+      title: Положение о внутреннем аудите АО «Компания», редакция №8
+      approved: 2021-06-25
+      protocol: "13"
+      role: before
+    - doc_id: ia_charter_rev9
+      title: Положение о внутреннем аудите АО «Компания», редакция №9
+      approved: 2022-12-23
+      protocol: "7"
+      role: after
+  counts:
+    positive: 22
+    negative: 6
+
+units:
+  - unit_id: DITAAD
+    name: Департамент ИТ-аудита и анализа данных
+    status: created
+    evidence: [{doc_id: ia_charter_rev9, clause: "3.4а"}]
+  - unit_id: DOA
+    name: Департамент операционного аудита
+    status: created
+    evidence: [{doc_id: ia_charter_rev9, clause: "3.4б"}]
+  - unit_id: DNM
+    name: Департамент непрерывного мониторинга системы внутреннего контроля
+    status: preserved
+    evidence:
+      - {doc_id: ia_charter_rev8, clause: "3.4а"}
+      - {doc_id: ia_charter_rev9, clause: "3.4в"}
+  - unit_id: DKKM
+    name: Департамент контроля качества аудита и методологии
+    status: transformed
+    note: утратил 3 из 4 типов должностей
+    evidence:
+      - {doc_id: ia_charter_rev8, clause: "3.8"}
+      - {doc_id: ia_charter_rev9, clause: "3.9"}
+  - unit_id: DIR_IA_LINE
+    name: Директор направления внутреннего аудита
+    status: abolished
+    note: звено растворено в «Директоры департаментов»
+    evidence:
+      - {doc_id: ia_charter_rev8, clause: "3.5а"}
+      - {doc_id: ia_charter_rev8, clause: "5.3"}
+
+findings:
+
+  # --- потеря функций ---------------------------------------------------------
+  - id: L1
+    type: lost
+    severity: critical
+    statement: >-
+      Полномочие вносить предложения по объёму и содержанию внешней оценки БВА
+      не закреплено ни за одним подразделением, при сохранении требования
+      проводить внешнюю оценку не реже одного раза в пять лет.
+    units: [DKKM]
+    evidence:
+      - {doc_id: ia_charter_rev8, clause: "5.6.3", role: before}
+      - {doc_id: ia_charter_rev9, clause: "11.2", role: requirement}
+
+  - id: L2
+    type: lost
+    severity: high
+    statement: >-
+      Утрачено право формировать группы контроля качества с привлечением
+      работников БВА в соответствии с ресурсным планом и бюджетом затрат.
+    units: [DKKM]
+    evidence:
+      - {doc_id: ia_charter_rev8, clause: "5.6.2", role: before}
+
+  - id: L3
+    type: lost
+    severity: high
+    statement: >-
+      Утрачено полномочие вносить предложения по утверждению программ
+      предоставления гарантий и консультаций — блок прав ДНМ удалён целиком.
+    units: [DNM]
+    evidence:
+      - {doc_id: ia_charter_rev8, clause: "5.7.1", role: before}
+
+  - id: L4
+    type: lost
+    severity: medium
+    statement: >-
+      Утрачена функция доводить до сведения Руководителей Общества результаты
+      по запросу оказания консультационных услуг.
+    units: [DNM]
+    evidence:
+      - {doc_id: ia_charter_rev8, clause: "5.7.2", role: before}
+
+  - id: L5
+    type: lost
+    severity: high
+    statement: >-
+      Из состава отчётности перед Комитетом по аудиту и Советом директоров
+      исключено информирование о соблюдении Международных профессиональных
+      стандартов внутреннего аудита.
+    evidence:
+      - {doc_id: ia_charter_rev8, clause: "12.1.4", role: before}
+      - {doc_id: ia_charter_rev9, clause: "12.1.4", role: after}
+
+  - id: L6
+    type: lost
+    severity: medium
+    statement: >-
+      Утрачена функция контроля сроков выполнения графика проверки проектной
+      командой.
+    evidence:
+      - {doc_id: ia_charter_rev8, clause: "5.3.4б", role: before}
+      - {doc_id: ia_charter_rev9, clause: "5.3.5", role: after}
+
+  - id: L7
+    type: lost
+    severity: low
+    statement: >-
+      ДККМ утратил полномочие вносить предложения по повышению
+      профессионального уровня работников БВА.
+    units: [DKKM]
+    evidence:
+      - {doc_id: ia_charter_rev8, clause: "5.5.8", role: before}
+
+  # --- ослабление норм -------------------------------------------------------
+  - id: W1
+    type: weakened
+    severity: high
+    statement: >-
+      Анализ контрольных процедур объекта аудита переведён из обязательного
+      в дискреционный: «осуществляется» заменено на «может осуществляться».
+    modality_before: осуществляется
+    modality_after: может
+    evidence:
+      - {doc_id: ia_charter_rev8, clause: "9.15", role: before}
+      - {doc_id: ia_charter_rev9, clause: "9.15", role: after}
+
+  - id: W2
+    type: weakened
+    severity: critical
+    statement: >-
+      Эскалация неприемлемого для Общества уровня принятого риска потеряла
+      императивность: «должен обсудить» и «должен проинформировать Совет
+      директоров» заменены на изъявительное наклонение.
+    modality_before: должен
+    modality_after: осуществляется
+    evidence:
+      - {doc_id: ia_charter_rev8, clause: "9.55", role: before}
+      - {doc_id: ia_charter_rev9, clause: "9.55", role: after}
+
+  - id: W3
+    type: weakened
+    severity: high
+    statement: >-
+      Снята периодичность отчётности об итогах выполнения плана работ БВА:
+      «на ежеквартальной основе и по итогам года» заменено на общую отсылку.
+    units: [DKKM]
+    evidence:
+      - {doc_id: ia_charter_rev8, clause: "5.5.5", role: before}
+      - {doc_id: ia_charter_rev9, clause: "5.5.3", role: after}
+
+  - id: W4
+    type: weakened
+    severity: low
+    statement: >-
+      Право вносить изменения в утверждённые программы размыто с «программ
+      проверок» до «программ в зоне деятельности».
+    evidence:
+      - {doc_id: ia_charter_rev8, clause: "5.6.1", role: before}
+      - {doc_id: ia_charter_rev9, clause: "5.6.1", role: after}
+
+  - id: W5
+    type: weakened
+    severity: medium
+    statement: >-
+      В перечне нормативной базы «Международные профессиональные стандарты
+      внутреннего аудита» заменены на «Профессиональные стандарты», при
+      сохранении обязательности руководства международного Института
+      внутренних аудиторов.
+    evidence:
+      - {doc_id: ia_charter_rev8, clause: "1.10", role: before}
+      - {doc_id: ia_charter_rev9, clause: "1.10", role: after}
+      - {doc_id: ia_charter_rev9, clause: "1.9", role: requirement}
+
+  # --- передача функций ------------------------------------------------------
+  - id: T1
+    type: transferred
+    severity: info
+    statement: >-
+      Выявление рисков с недостаточным или дублирующим покрытием субъектами СВК
+      в рамках Карты гарантий передано от ДНМ к ДИТААД и ДОА.
+    units: [DNM, DITAAD, DOA]
+    evidence:
+      - {doc_id: ia_charter_rev8, clause: "5.4.4б", role: before}
+      - {doc_id: ia_charter_rev9, clause: "5.3.3б", role: after}
+
+  - id: T2
+    type: transferred
+    severity: info
+    statement: >-
+      Делегирование контроля над выполнением проверки переадресовано с
+      упразднённого Директора направления ВА на Директора операционного аудита.
+    units: [DIR_IA_LINE, DOA]
+    evidence:
+      - {doc_id: ia_charter_rev8, clause: "9.37", role: before}
+      - {doc_id: ia_charter_rev9, clause: "9.37", role: after}
+
+  # --- дублирование ----------------------------------------------------------
+  - id: D1
+    type: duplicated
+    severity: high
+    statement: >-
+      Должности «Менеджер по аудиту» и «Директор проектов ДККМ» одновременно
+      подчинены Директору направления ВА и Директору ДККМ — двойное подчинение.
+    units: [DIR_IA_LINE, DKKM]
+    evidence:
+      - {doc_id: ia_charter_rev8, clause: "3.6", role: before}
+      - {doc_id: ia_charter_rev8, clause: "3.8", role: before}
+
+  - id: D2
+    type: duplicated
+    severity: medium
+    statement: >-
+      Организация контроля устранения выявленных недостатков закреплена
+      одновременно за Главным аудитором, директорами департаментов и ДККМ.
+    units: [DKKM, DITAAD, DOA]
+    evidence:
+      - {doc_id: ia_charter_rev9, clause: "5.1.4", role: after}
+      - {doc_id: ia_charter_rev9, clause: "5.3.7", role: after}
+      - {doc_id: ia_charter_rev9, clause: "5.5.5", role: after}
+
+  - id: D3
+    type: duplicated
+    severity: medium
+    statement: >-
+      Формирование плана работ БВА закреплено дважды: Главный аудитор
+      «организует работу по подготовке», ДККМ «консолидирует и формирует».
+    units: [DKKM]
+    evidence:
+      - {doc_id: ia_charter_rev9, clause: "5.1.1", role: after}
+      - {doc_id: ia_charter_rev9, clause: "5.5.7", role: after}
+
+  # --- нормативные коллизии --------------------------------------------------
+  - id: C1
+    type: collision
+    severity: high
+    statement: >-
+      Функция содействия в разработке процедур и мероприятий по
+      совершенствованию СУР, ВК и КУ противоречит прямому запрету разрабатывать
+      дизайн процессов и участвовать в их реализации.
+    evidence:
+      - {doc_id: ia_charter_rev9, clause: "2.4.7", role: after}
+      - {doc_id: ia_charter_rev9, clause: "5.8.1а", role: prohibition}
+
+  - id: C2
+    type: collision
+    severity: medium
+    statement: >-
+      Закреплённая за ДИТААД автоматизация процессов внутреннего аудита
+      противоречит запрету внедрять операционные и контрольные процедуры.
+    units: [DITAAD]
+    evidence:
+      - {doc_id: ia_charter_rev9, clause: "5.3.2а", role: after}
+      - {doc_id: ia_charter_rev9, clause: "5.8.1б", role: prohibition}
+
+  # --- конфликт интересов ----------------------------------------------------
+  - id: K1
+    type: conflict_of_interest
+    severity: high
+    statement: >-
+      ДККМ оценивает качество внутреннего аудита, находясь в подчинении
+      Главного аудитора, деятельность которого является объектом оценки;
+      периодическая оценка проводится посредством самооценки.
+    units: [DKKM]
+    evidence:
+      - {doc_id: ia_charter_rev9, clause: "3.5г", role: after}
+      - {doc_id: ia_charter_rev9, clause: "10.3", role: after}
+      - {doc_id: ia_charter_rev9, clause: "11.1", role: after}
+
+  - id: K2
+    type: conflict_of_interest
+    severity: medium
+    statement: >-
+      Участие Главного аудитора в органах управления подконтрольных обществ
+      совмещается с аудитом этих обществ; риск признан в документе и требует
+      раскрытия и декларации.
+    evidence:
+      - {doc_id: ia_charter_rev9, clause: "4", role: after}
+
+  # --- нарушенная ссылка -----------------------------------------------------
+  - id: BR1
+    type: broken_reference
+    severity: high
+    statement: >-
+      После перенумерации раздела 5 ссылки «в части, не противоречащей
+      п. 5.8.1 и 5.8.2» указывают на блок запретов вместо прав работников БВА
+      на доступ к документам, которые перенесены в п. 5.7.1 и 5.7.2.
+    evidence:
+      - {doc_id: ia_charter_rev9, clause: "5.10.2", role: reference_source}
+      - {doc_id: ia_charter_rev9, clause: "5.10.5", role: reference_source}
+      - {doc_id: ia_charter_rev9, clause: "5.8.1", role: reference_target}
+      - {doc_id: ia_charter_rev9, clause: "5.7.1", role: requirement}
+      - {doc_id: ia_charter_rev8, clause: "5.11.2", role: before}
+
+# Негативные тесты: срабатывание правила на этих случаях считается false positive.
+negative_tests:
+  - id: N1
+    must_not_fire: duplicated
+    reason: >-
+      Вертикальный каскад: функция выявления рисков с дублирующим покрытием
+      присутствует как общая функция ВА и как функция департаментов; между
+      узлами существует связь reports_to.
+    evidence:
+      - {doc_id: ia_charter_rev9, clause: "2.4.17б"}
+      - {doc_id: ia_charter_rev9, clause: "5.3.3б"}
+
+  - id: N2
+    must_not_fire: lost
+    reason: Функция передана другому владельцу, а не утрачена — см. T1.
+    evidence:
+      - {doc_id: ia_charter_rev8, clause: "5.4.4б"}
+
+  - id: N3
+    must_not_fire: lost
+    reason: >-
+      Ссылка на упразднённое звено корректно переадресована — см. T2.
+    evidence:
+      - {doc_id: ia_charter_rev9, clause: "9.37"}
+
+  - id: N4
+    must_not_fire: any
+    reason: >-
+      Пункт пуст (содержит только «;»). Извлечение атома или findings по нему
+      является галлюцинацией.
+    evidence:
+      - {doc_id: ia_charter_rev8, clause: "5.5.3"}
+
+  - id: N5
+    must_not_fire: any
+    reason: >-
+      «АО «Компания»» и «ПАО «КОМПАНИЯ»» — одна организация, различие
+      орфографическое; не считать разными субъектами.
+    evidence:
+      - {doc_id: ia_charter_rev8, clause: "5.10.1"}
+      - {doc_id: ia_charter_rev9, clause: "5.9.1"}
+
+  - id: N6
+    must_not_fire: any
+    reason: >-
+      Оглавление идентично в обеих редакциях при разном числе департаментов;
+      не использовать как источник структуры.
+    evidence:
+      - {doc_id: ia_charter_rev9, clause: "оглавление"}
