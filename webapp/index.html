@@ -237,7 +237,7 @@ body{margin:0;background:var(--bg);color:var(--fg);
 .q{border:1px solid var(--line);border-radius:9px;overflow:hidden;background:var(--panel)}
 .qh{display:flex;align-items:center;gap:8px;padding:7px 10px;background:var(--sunk);
   border-bottom:1px solid var(--line);font-size:11.5px}
-.qh .side{font-family:var(--mono);color:var(--fg2)}
+.qh .qref{font-family:var(--mono);color:var(--fg2)}
 .qh .rol{color:var(--fg3)}
 .qh .acts{margin-left:auto;display:flex;gap:3px}
 .qh button{border:0;background:0;color:var(--fg3);cursor:pointer;font:inherit;font-size:11.5px;
@@ -642,7 +642,7 @@ function quote(e, key) {
   const side = e.doc_id === "before" ? "редакция «до»" : "редакция «после»";
   const where = e.file ? `${e.file} · п. ${e.clause}` : `п. ${e.clause}`;
   return `<div class="q ${RCLS[e.role] || "af"}">
-    <div class="qh"><span class="side">${esc(side)} · ${esc(where)}</span>
+    <div class="qh"><span class="qref">${esc(side)} · ${esc(where)}</span>
       ${e.role ? `<span class="rol">${esc(ROLE[e.role] || e.role)}</span>` : ""}
       <span class="acts">
         <button data-copy="${key}">копировать</button>
