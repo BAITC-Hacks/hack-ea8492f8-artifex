@@ -1,5 +1,71 @@
 # Artifex — OrgSolvency
 
+## Agentic document extraction and Lineage review
+
+The current integration adds a TypeScript agentic pipeline and the Lineage review
+workspace alongside the original Python engine below. The Python Word loader is
+reused; the original Python UI, detectors, and regression suite remain available.
+
+```bash
+npm ci
+npm run dev                 # http://127.0.0.1:4173 (or next free port)
+```
+
+Requires Node.js 24+ and Python 3. In **Document extraction**, upload before/after
+documents or load **Edition 8 / 9**, then extract, inspect/export JSON, and compare.
+The full organizer documents are included as Markdown exports in `corpus/full/`.
+`corpus/rev8.txt` and `corpus/rev9.txt` remain the original team's excerpt corpus.
+
+For agentic mode, configure `.env` using `.env.example`:
+
+```dotenv
+OPENAI_API_KEY=your-api-key
+OPENAI_MODEL=gpt-4.1-mini
+```
+
+Restart the server after changing environment configuration. Keys stay server-side.
+The model is configurable. `OPENAI_BASE_URL` is optional, but the endpoint must
+support **Responses API, strict structured outputs and function tools**. A server
+that supports only Chat Completions is not a drop-in replacement for this pipeline.
+These settings are separate from the original Python engine's `ARTIFEX_AI_*` variables.
+
+The structure, responsibility, and review agents can search/read source clauses.
+Code owns IDs, source spans, graph validation, bounded repair, caching and budgets.
+Each revision returns JSON with `graph.nodes`, `graph.edges`, `functions`, `issues`,
+coverage, provenance and a tool-execution trace. Positions, departments, external
+bodies and groups are distinct; administrative and functional reporting are distinct.
+
+```bash
+npm run extract -- --examples --output .data/local-extraction.json
+npm run extract -- --examples --agentic --output .data/agentic-extraction.json
+npm run extract -- --input request.json --output result.json
+npm run schema
+npm test
+npm run build
+python3 tests/document_bridge_test.py
+```
+
+Text, Markdown and Word input work with Python's standard library. Text PDFs and
+Excel need optional parsers: `python3 -m pip install -r requirements-input.txt`
+(use a virtual environment and set `PYTHON_BIN` to its interpreter when needed).
+Scanned PDFs need external OCR; missing text is reported, not fabricated. Word
+automatic numbering is flagged; embedded objects/drawings are not reconstructed.
+
+**Accuracy boundary:** local mode produces a conservative structural baseline and
+unassigned responsibility candidates. It is not a substitute for agentic semantic
+extraction. Unowned responsibilities remain in JSON and are excluded from ownership
+comparison with explicit warnings. Agentic extraction also needs human review.
+Source-span validation proves provenance, not semantic correctness or legal validity.
+Live OpenAI accuracy on the full documents is not yet benchmarked; model protocol
+tests use deterministic mocks. The organizer-document regressions check known
+structural facts, context, renumbering, and source fidelity, not a complete answer key.
+
+See [pipeline architecture and JSON contract](docs/agentic-extraction.md),
+[example provenance and benchmark scope](corpus/full/README.md), and the
+[Lineage comparison documentation](docs/lineage-app.md).
+
+---
+
 ### Проверка ответственности при реорганизации
 
 Artifex помогает сотруднику, анализирующему организационные изменения,
@@ -20,6 +86,26 @@ Artifex помогает сотруднику, анализирующему ор
 [Проверка для жюри](#как-проверить-решение) ·
 [Результаты](#измеренные-результаты) ·
 [Ограничения](#ограничения)
+
+### Агентный анализ документов
+
+В репозитории также доступно рабочее место Lineage для извлечения графа
+подразделений, должностей и функций из документов «до» и «после»:
+
+```bash
+npm ci
+npm run dev
+```
+
+Откройте `http://127.0.0.1:4173` и вкладку **Document extraction**.
+Режим **Local baseline** работает без ключа и оставляет неустановленных владельцев
+функций для проверки. Для **Agentic** укажите `OPENAI_API_KEY` в локальном `.env`
+по образцу `.env.example` и перезапустите сервер. Экспорт включает граф, функции,
+дословные цитаты и предупреждения о неполном покрытии.
+
+Это отдельный TypeScript-сценарий; приведённые ниже результаты и инструкции
+для Python-приложения относятся к исходному контрольному корпусу. Подробнее:
+[архитектура и JSON-контракт](docs/agentic-extraction.md).
 
 ## Какую проблему решаем
 

@@ -31,3 +31,10 @@ out/
 
 # временный файл загрузки
 .upload.tmp
+
+# Lineage workspace and generated previews
+dist/
+.data/
+*.log
+test-results/
+playwright-report/

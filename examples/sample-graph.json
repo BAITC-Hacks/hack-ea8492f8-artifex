@@ -1,0 +1,1013 @@
+{
+  "schemaVersion": "1.0",
+  "title": "September review (sample)",
+  "before": {
+    "id": "before",
+    "label": "Current organization",
+    "date": "2026-06-01",
+    "documents": [
+      {
+        "id": "before-mandates",
+        "title": "Department mandates - June 2026",
+        "text": "1. Compliance shall monitor supplier compliance across all regions every month.\n\n2. Procurement shall approve contracts in all regions up to 10,000,000 KZT, inclusive.\n\n3. Operations shall maintain operational records for domestic and international business.\n\n4. Compliance shall report security incidents across all regions to the executive board.\n\n5. Finance shall process invoices across all business units.\n\n6. Executive board shall approve invoices across all business units.\n\n7. Compliance shall independently audit invoices across all business units.\n\n8. Customer service shall review customer complaints across all regions.\n\n9. Finance shall prepare the annual budget across all business units.\n\n10. Compliance shall independently audit supplier compliance across all regions annually.\n\n11. Operations shall manage inventory across all business units."
+      },
+      {
+        "id": "before-structure",
+        "title": "Organizational structure - June 2026",
+        "text": "Executive board (board) is the governing body.\nProcurement (procurement) reports to board.\nCompliance (compliance) reports to board.\nFinance (finance) reports to board.\nOperations (operations) reports to board.\nCustomer service (support) reports to board."
+      }
+    ],
+    "departments": [
+      {
+        "id": "board",
+        "name": "Executive board",
+        "parentId": null,
+        "previousIds": [],
+        "evidence": [
+          {
+            "documentId": "before-structure",
+            "locator": "Section 1",
+            "quote": "Executive board (board) is the governing body."
+          }
+        ]
+      },
+      {
+        "id": "procurement",
+        "name": "Procurement",
+        "parentId": "board",
+        "previousIds": [],
+        "evidence": [
+          {
+            "documentId": "before-structure",
+            "locator": "Section 2",
+            "quote": "Procurement (procurement) reports to board."
+          }
+        ]
+      },
+      {
+        "id": "compliance",
+        "name": "Compliance",
+        "parentId": "board",
+        "previousIds": [],
+        "evidence": [
+          {
+            "documentId": "before-structure",
+            "locator": "Section 3",
+            "quote": "Compliance (compliance) reports to board."
+          }
+        ]
+      },
+      {
+        "id": "finance",
+        "name": "Finance",
+        "parentId": "board",
+        "previousIds": [],
+        "evidence": [
+          {
+            "documentId": "before-structure",
+            "locator": "Section 4",
+            "quote": "Finance (finance) reports to board."
+          }
+        ]
+      },
+      {
+        "id": "operations",
+        "name": "Operations",
+        "parentId": "board",
+        "previousIds": [],
+        "evidence": [
+          {
+            "documentId": "before-structure",
+            "locator": "Section 5",
+            "quote": "Operations (operations) reports to board."
+          }
+        ]
+      },
+      {
+        "id": "support",
+        "name": "Customer service",
+        "parentId": "board",
+        "previousIds": [],
+        "evidence": [
+          {
+            "documentId": "before-structure",
+            "locator": "Section 6",
+            "quote": "Customer service (support) reports to board."
+          }
+        ]
+      }
+    ],
+    "functions": [
+      {
+        "id": "b-supplier-monitor",
+        "departmentId": "compliance",
+        "description": "Compliance shall monitor supplier compliance across all regions every month.",
+        "canonical": {
+          "action": "monitor",
+          "object": "supplier compliance",
+          "process": "procurement",
+          "authority": "oversight",
+          "scope": [
+            "*"
+          ],
+          "conditions": [],
+          "modality": "required",
+          "frequency": "monthly",
+          "threshold": null
+        },
+        "evidence": [
+          {
+            "documentId": "before-mandates",
+            "locator": "Clause 1",
+            "quote": "Compliance shall monitor supplier compliance across all regions every month."
+          }
+        ]
+      },
+      {
+        "id": "b-contract-approve",
+        "departmentId": "procurement",
+        "description": "Procurement shall approve contracts in all regions up to 10,000,000 KZT, inclusive.",
+        "canonical": {
+          "action": "approve",
+          "object": "contract",
+          "process": "contract management",
+          "authority": "decision",
+          "scope": [
+            "*"
+          ],
+          "conditions": [],
+          "modality": "required",
+          "frequency": null,
+          "threshold": {
+            "min": 0,
+            "max": 10000000,
+            "currency": "KZT"
+          }
+        },
+        "evidence": [
+          {
+            "documentId": "before-mandates",
+            "locator": "Clause 2",
+            "quote": "Procurement shall approve contracts in all regions up to 10,000,000 KZT, inclusive."
+          }
+        ]
+      },
+      {
+        "id": "b-records-maintain",
+        "departmentId": "operations",
+        "description": "Operations shall maintain operational records for domestic and international business.",
+        "canonical": {
+          "action": "maintain",
+          "object": "operational record",
+          "process": "record management",
+          "authority": "execution",
+          "scope": [
+            "domestic",
+            "international"
+          ],
+          "conditions": [],
+          "modality": "required",
+          "frequency": null,
+          "threshold": null
+        },
+        "evidence": [
+          {
+            "documentId": "before-mandates",
+            "locator": "Clause 3",
+            "quote": "Operations shall maintain operational records for domestic and international business."
+          }
+        ]
+      },
+      {
+        "id": "b-incident-report",
+        "departmentId": "compliance",
+        "description": "Compliance shall report security incidents across all regions to the executive board.",
+        "canonical": {
+          "action": "report",
+          "object": "security incident",
+          "process": "security",
+          "authority": "execution",
+          "scope": [
+            "*"
+          ],
+          "conditions": [],
+          "modality": "required",
+          "frequency": null,
+          "threshold": null
+        },
+        "evidence": [
+          {
+            "documentId": "before-mandates",
+            "locator": "Clause 4",
+            "quote": "Compliance shall report security incidents across all regions to the executive board."
+          }
+        ]
+      },
+      {
+        "id": "b-invoice-process",
+        "departmentId": "finance",
+        "description": "Finance shall process invoices across all business units.",
+        "canonical": {
+          "action": "execute",
+          "object": "invoice",
+          "process": "payment",
+          "authority": "execution",
+          "scope": [
+            "*"
+          ],
+          "conditions": [],
+          "modality": "required",
+          "frequency": null,
+          "threshold": null
+        },
+        "evidence": [
+          {
+            "documentId": "before-mandates",
+            "locator": "Clause 5",
+            "quote": "Finance shall process invoices across all business units."
+          }
+        ]
+      },
+      {
+        "id": "b-invoice-approve",
+        "departmentId": "board",
+        "description": "Executive board shall approve invoices across all business units.",
+        "canonical": {
+          "action": "approve",
+          "object": "invoice",
+          "process": "payment",
+          "authority": "decision",
+          "scope": [
+            "*"
+          ],
+          "conditions": [],
+          "modality": "required",
+          "frequency": null,
+          "threshold": null
+        },
+        "evidence": [
+          {
+            "documentId": "before-mandates",
+            "locator": "Clause 6",
+            "quote": "Executive board shall approve invoices across all business units."
+          }
+        ]
+      },
+      {
+        "id": "b-invoice-audit",
+        "departmentId": "compliance",
+        "description": "Compliance shall independently audit invoices across all business units.",
+        "canonical": {
+          "action": "audit",
+          "object": "invoice",
+          "process": "payment",
+          "authority": "independent_assurance",
+          "scope": [
+            "*"
+          ],
+          "conditions": [],
+          "modality": "required",
+          "frequency": null,
+          "threshold": null
+        },
+        "evidence": [
+          {
+            "documentId": "before-mandates",
+            "locator": "Clause 7",
+            "quote": "Compliance shall independently audit invoices across all business units."
+          }
+        ]
+      },
+      {
+        "id": "b-complaint-review",
+        "departmentId": "support",
+        "description": "Customer service shall review customer complaints across all regions.",
+        "canonical": {
+          "action": "review",
+          "object": "customer complaint",
+          "process": "customer service",
+          "authority": "recommendation",
+          "scope": [
+            "*"
+          ],
+          "conditions": [],
+          "modality": "required",
+          "frequency": null,
+          "threshold": null
+        },
+        "evidence": [
+          {
+            "documentId": "before-mandates",
+            "locator": "Clause 8",
+            "quote": "Customer service shall review customer complaints across all regions."
+          }
+        ]
+      },
+      {
+        "id": "b-budget-prepare",
+        "departmentId": "finance",
+        "description": "Finance shall prepare the annual budget across all business units.",
+        "canonical": {
+          "action": "prepare",
+          "object": "budget",
+          "process": "financial planning",
+          "authority": "execution",
+          "scope": [
+            "*"
+          ],
+          "conditions": [],
+          "modality": "required",
+          "frequency": "annual",
+          "threshold": null
+        },
+        "evidence": [
+          {
+            "documentId": "before-mandates",
+            "locator": "Clause 9",
+            "quote": "Finance shall prepare the annual budget across all business units."
+          }
+        ]
+      },
+      {
+        "id": "b-supplier-audit",
+        "departmentId": "compliance",
+        "description": "Compliance shall independently audit supplier compliance across all regions annually.",
+        "canonical": {
+          "action": "audit",
+          "object": "supplier compliance",
+          "process": "procurement",
+          "authority": "independent_assurance",
+          "scope": [
+            "*"
+          ],
+          "conditions": [],
+          "modality": "required",
+          "frequency": "annual",
+          "threshold": null
+        },
+        "evidence": [
+          {
+            "documentId": "before-mandates",
+            "locator": "Clause 10",
+            "quote": "Compliance shall independently audit supplier compliance across all regions annually."
+          }
+        ]
+      },
+      {
+        "id": "b-inventory-manage",
+        "departmentId": "operations",
+        "description": "Operations shall manage inventory across all business units.",
+        "canonical": {
+          "action": "manage",
+          "object": "inventory",
+          "process": "inventory management",
+          "authority": "execution",
+          "scope": [
+            "*"
+          ],
+          "conditions": [],
+          "modality": "required",
+          "frequency": null,
+          "threshold": null
+        },
+        "evidence": [
+          {
+            "documentId": "before-mandates",
+            "locator": "Clause 11",
+            "quote": "Operations shall manage inventory across all business units."
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "id": "before-procurement-reports",
+        "fromId": "procurement",
+        "toId": "board",
+        "type": "reports_to",
+        "evidence": [
+          {
+            "documentId": "before-structure",
+            "locator": "Section 2",
+            "quote": "Procurement (procurement) reports to board."
+          }
+        ]
+      },
+      {
+        "id": "before-compliance-reports",
+        "fromId": "compliance",
+        "toId": "board",
+        "type": "reports_to",
+        "evidence": [
+          {
+            "documentId": "before-structure",
+            "locator": "Section 3",
+            "quote": "Compliance (compliance) reports to board."
+          }
+        ]
+      },
+      {
+        "id": "before-finance-reports",
+        "fromId": "finance",
+        "toId": "board",
+        "type": "reports_to",
+        "evidence": [
+          {
+            "documentId": "before-structure",
+            "locator": "Section 4",
+            "quote": "Finance (finance) reports to board."
+          }
+        ]
+      },
+      {
+        "id": "before-operations-reports",
+        "fromId": "operations",
+        "toId": "board",
+        "type": "reports_to",
+        "evidence": [
+          {
+            "documentId": "before-structure",
+            "locator": "Section 5",
+            "quote": "Operations (operations) reports to board."
+          }
+        ]
+      },
+      {
+        "id": "before-support-reports",
+        "fromId": "support",
+        "toId": "board",
+        "type": "reports_to",
+        "evidence": [
+          {
+            "documentId": "before-structure",
+            "locator": "Section 6",
+            "quote": "Customer service (support) reports to board."
+          }
+        ]
+      }
+    ]
+  },
+  "after": {
+    "id": "after",
+    "label": "Proposed organization",
+    "date": "2026-09-01",
+    "documents": [
+      {
+        "id": "after-mandates",
+        "title": "Department mandates - September 2026",
+        "text": "1. Vendor assurance shall monitor supplier compliance across all regions every month.\n\n2. Strategic sourcing shall monitor vendor compliance across all regions every month.\n\n3. Strategic sourcing shall approve contracts in all regions up to 1,000,000 KZT, inclusive.\n\n4. Regional operations shall maintain operational records for domestic business.\n\n5. Shared services shall maintain operational records for international business.\n\n6. Finance shall process invoices across all business units.\n\n7. Finance shall approve invoices across all business units.\n\n8. Internal audit shall independently audit invoices across all business units.\n\n9. Customer service shall review customer complaints across all regions.\n\n10. Finance shall prepare the annual budget across all business units.\n\n11. Vendor assurance shall independently audit supplier compliance across all regions annually.\n\n12. Regional operations shall manage inventory across all business units.\n\n13. Vendor assurance shall report supplier concentration risk across all regions quarterly."
+      },
+      {
+        "id": "after-structure",
+        "title": "Organizational structure - September 2026",
+        "text": "Executive board (board) is the governing body.\nStrategic sourcing (sourcing) reports to board.\nVendor assurance (assurance) reports to board.\nFinance (finance) reports to board.\nRegional operations (regional) reports to board.\nShared services (shared) reports to board.\nCustomer service (support) reports to board.\nInternal audit (audit) reports to finance."
+      }
+    ],
+    "departments": [
+      {
+        "id": "board",
+        "name": "Executive board",
+        "parentId": null,
+        "previousIds": [
+          "board"
+        ],
+        "evidence": [
+          {
+            "documentId": "after-structure",
+            "locator": "Section 1",
+            "quote": "Executive board (board) is the governing body."
+          }
+        ]
+      },
+      {
+        "id": "sourcing",
+        "name": "Strategic sourcing",
+        "parentId": "board",
+        "previousIds": [
+          "procurement"
+        ],
+        "evidence": [
+          {
+            "documentId": "after-structure",
+            "locator": "Section 2",
+            "quote": "Strategic sourcing (sourcing) reports to board."
+          }
+        ]
+      },
+      {
+        "id": "assurance",
+        "name": "Vendor assurance",
+        "parentId": "board",
+        "previousIds": [
+          "compliance"
+        ],
+        "evidence": [
+          {
+            "documentId": "after-structure",
+            "locator": "Section 3",
+            "quote": "Vendor assurance (assurance) reports to board."
+          }
+        ]
+      },
+      {
+        "id": "finance",
+        "name": "Finance",
+        "parentId": "board",
+        "previousIds": [
+          "finance"
+        ],
+        "evidence": [
+          {
+            "documentId": "after-structure",
+            "locator": "Section 4",
+            "quote": "Finance (finance) reports to board."
+          }
+        ]
+      },
+      {
+        "id": "regional",
+        "name": "Regional operations",
+        "parentId": "board",
+        "previousIds": [
+          "operations"
+        ],
+        "evidence": [
+          {
+            "documentId": "after-structure",
+            "locator": "Section 5",
+            "quote": "Regional operations (regional) reports to board."
+          }
+        ]
+      },
+      {
+        "id": "shared",
+        "name": "Shared services",
+        "parentId": "board",
+        "previousIds": [
+          "operations"
+        ],
+        "evidence": [
+          {
+            "documentId": "after-structure",
+            "locator": "Section 6",
+            "quote": "Shared services (shared) reports to board."
+          }
+        ]
+      },
+      {
+        "id": "support",
+        "name": "Customer service",
+        "parentId": "board",
+        "previousIds": [
+          "support"
+        ],
+        "evidence": [
+          {
+            "documentId": "after-structure",
+            "locator": "Section 7",
+            "quote": "Customer service (support) reports to board."
+          }
+        ]
+      },
+      {
+        "id": "audit",
+        "name": "Internal audit",
+        "parentId": "finance",
+        "previousIds": [
+          "compliance"
+        ],
+        "evidence": [
+          {
+            "documentId": "after-structure",
+            "locator": "Section 8",
+            "quote": "Internal audit (audit) reports to finance."
+          }
+        ]
+      }
+    ],
+    "functions": [
+      {
+        "id": "a-supplier-monitor",
+        "departmentId": "assurance",
+        "description": "Vendor assurance shall monitor supplier compliance across all regions every month.",
+        "canonical": {
+          "action": "monitor",
+          "object": "supplier compliance",
+          "process": "procurement",
+          "authority": "oversight",
+          "scope": [
+            "*"
+          ],
+          "conditions": [],
+          "modality": "required",
+          "frequency": "monthly",
+          "threshold": null
+        },
+        "evidence": [
+          {
+            "documentId": "after-mandates",
+            "locator": "Clause 1",
+            "quote": "Vendor assurance shall monitor supplier compliance across all regions every month."
+          }
+        ]
+      },
+      {
+        "id": "a-supplier-monitor-copy",
+        "departmentId": "sourcing",
+        "description": "Strategic sourcing shall monitor vendor compliance across all regions every month.",
+        "canonical": {
+          "action": "monitor",
+          "object": "vendor compliance",
+          "process": "procurement",
+          "authority": "oversight",
+          "scope": [
+            "*"
+          ],
+          "conditions": [],
+          "modality": "required",
+          "frequency": "monthly",
+          "threshold": null
+        },
+        "evidence": [
+          {
+            "documentId": "after-mandates",
+            "locator": "Clause 2",
+            "quote": "Strategic sourcing shall monitor vendor compliance across all regions every month."
+          }
+        ]
+      },
+      {
+        "id": "a-contract-approve",
+        "departmentId": "sourcing",
+        "description": "Strategic sourcing shall approve contracts in all regions up to 1,000,000 KZT, inclusive.",
+        "canonical": {
+          "action": "approve",
+          "object": "contract",
+          "process": "contract management",
+          "authority": "decision",
+          "scope": [
+            "*"
+          ],
+          "conditions": [],
+          "modality": "required",
+          "frequency": null,
+          "threshold": {
+            "min": 0,
+            "max": 1000000,
+            "currency": "KZT"
+          }
+        },
+        "evidence": [
+          {
+            "documentId": "after-mandates",
+            "locator": "Clause 3",
+            "quote": "Strategic sourcing shall approve contracts in all regions up to 1,000,000 KZT, inclusive."
+          }
+        ]
+      },
+      {
+        "id": "a-records-domestic",
+        "departmentId": "regional",
+        "description": "Regional operations shall maintain operational records for domestic business.",
+        "canonical": {
+          "action": "maintain",
+          "object": "operational record",
+          "process": "record management",
+          "authority": "execution",
+          "scope": [
+            "domestic"
+          ],
+          "conditions": [],
+          "modality": "required",
+          "frequency": null,
+          "threshold": null
+        },
+        "evidence": [
+          {
+            "documentId": "after-mandates",
+            "locator": "Clause 4",
+            "quote": "Regional operations shall maintain operational records for domestic business."
+          }
+        ]
+      },
+      {
+        "id": "a-records-international",
+        "departmentId": "shared",
+        "description": "Shared services shall maintain operational records for international business.",
+        "canonical": {
+          "action": "maintain",
+          "object": "operational record",
+          "process": "record management",
+          "authority": "execution",
+          "scope": [
+            "international"
+          ],
+          "conditions": [],
+          "modality": "required",
+          "frequency": null,
+          "threshold": null
+        },
+        "evidence": [
+          {
+            "documentId": "after-mandates",
+            "locator": "Clause 5",
+            "quote": "Shared services shall maintain operational records for international business."
+          }
+        ]
+      },
+      {
+        "id": "a-invoice-process",
+        "departmentId": "finance",
+        "description": "Finance shall process invoices across all business units.",
+        "canonical": {
+          "action": "execute",
+          "object": "invoice",
+          "process": "payment",
+          "authority": "execution",
+          "scope": [
+            "*"
+          ],
+          "conditions": [],
+          "modality": "required",
+          "frequency": null,
+          "threshold": null
+        },
+        "evidence": [
+          {
+            "documentId": "after-mandates",
+            "locator": "Clause 6",
+            "quote": "Finance shall process invoices across all business units."
+          }
+        ]
+      },
+      {
+        "id": "a-invoice-approve",
+        "departmentId": "finance",
+        "description": "Finance shall approve invoices across all business units.",
+        "canonical": {
+          "action": "approve",
+          "object": "invoice",
+          "process": "payment",
+          "authority": "decision",
+          "scope": [
+            "*"
+          ],
+          "conditions": [],
+          "modality": "required",
+          "frequency": null,
+          "threshold": null
+        },
+        "evidence": [
+          {
+            "documentId": "after-mandates",
+            "locator": "Clause 7",
+            "quote": "Finance shall approve invoices across all business units."
+          }
+        ]
+      },
+      {
+        "id": "a-invoice-audit",
+        "departmentId": "audit",
+        "description": "Internal audit shall independently audit invoices across all business units.",
+        "canonical": {
+          "action": "audit",
+          "object": "invoice",
+          "process": "payment",
+          "authority": "independent_assurance",
+          "scope": [
+            "*"
+          ],
+          "conditions": [],
+          "modality": "required",
+          "frequency": null,
+          "threshold": null
+        },
+        "evidence": [
+          {
+            "documentId": "after-mandates",
+            "locator": "Clause 8",
+            "quote": "Internal audit shall independently audit invoices across all business units."
+          }
+        ]
+      },
+      {
+        "id": "a-complaint-review",
+        "departmentId": "support",
+        "description": "Customer service shall review customer complaints across all regions.",
+        "canonical": {
+          "action": "review",
+          "object": "customer complaint",
+          "process": "customer service",
+          "authority": "recommendation",
+          "scope": [
+            "*"
+          ],
+          "conditions": [],
+          "modality": "required",
+          "frequency": null,
+          "threshold": null
+        },
+        "evidence": [
+          {
+            "documentId": "after-mandates",
+            "locator": "Clause 9",
+            "quote": "Customer service shall review customer complaints across all regions."
+          }
+        ]
+      },
+      {
+        "id": "a-budget-prepare",
+        "departmentId": "finance",
+        "description": "Finance shall prepare the annual budget across all business units.",
+        "canonical": {
+          "action": "prepare",
+          "object": "budget",
+          "process": "financial planning",
+          "authority": "execution",
+          "scope": [
+            "*"
+          ],
+          "conditions": [],
+          "modality": "required",
+          "frequency": "annual",
+          "threshold": null
+        },
+        "evidence": [
+          {
+            "documentId": "after-mandates",
+            "locator": "Clause 10",
+            "quote": "Finance shall prepare the annual budget across all business units."
+          }
+        ]
+      },
+      {
+        "id": "a-supplier-audit",
+        "departmentId": "assurance",
+        "description": "Vendor assurance shall independently audit supplier compliance across all regions annually.",
+        "canonical": {
+          "action": "audit",
+          "object": "supplier compliance",
+          "process": "procurement",
+          "authority": "independent_assurance",
+          "scope": [
+            "*"
+          ],
+          "conditions": [],
+          "modality": "required",
+          "frequency": "annual",
+          "threshold": null
+        },
+        "evidence": [
+          {
+            "documentId": "after-mandates",
+            "locator": "Clause 11",
+            "quote": "Vendor assurance shall independently audit supplier compliance across all regions annually."
+          }
+        ]
+      },
+      {
+        "id": "a-inventory-manage",
+        "departmentId": "regional",
+        "description": "Regional operations shall manage inventory across all business units.",
+        "canonical": {
+          "action": "manage",
+          "object": "inventory",
+          "process": "inventory management",
+          "authority": "execution",
+          "scope": [
+            "*"
+          ],
+          "conditions": [],
+          "modality": "required",
+          "frequency": null,
+          "threshold": null
+        },
+        "evidence": [
+          {
+            "documentId": "after-mandates",
+            "locator": "Clause 12",
+            "quote": "Regional operations shall manage inventory across all business units."
+          }
+        ]
+      },
+      {
+        "id": "a-risk-report",
+        "departmentId": "assurance",
+        "description": "Vendor assurance shall report supplier concentration risk across all regions quarterly.",
+        "canonical": {
+          "action": "report",
+          "object": "supplier concentration risk",
+          "process": "risk management",
+          "authority": "execution",
+          "scope": [
+            "*"
+          ],
+          "conditions": [],
+          "modality": "required",
+          "frequency": "quarterly",
+          "threshold": null
+        },
+        "evidence": [
+          {
+            "documentId": "after-mandates",
+            "locator": "Clause 13",
+            "quote": "Vendor assurance shall report supplier concentration risk across all regions quarterly."
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "id": "after-sourcing-reports",
+        "fromId": "sourcing",
+        "toId": "board",
+        "type": "reports_to",
+        "evidence": [
+          {
+            "documentId": "after-structure",
+            "locator": "Section 2",
+            "quote": "Strategic sourcing (sourcing) reports to board."
+          }
+        ]
+      },
+      {
+        "id": "after-assurance-reports",
+        "fromId": "assurance",
+        "toId": "board",
+        "type": "reports_to",
+        "evidence": [
+          {
+            "documentId": "after-structure",
+            "locator": "Section 3",
+            "quote": "Vendor assurance (assurance) reports to board."
+          }
+        ]
+      },
+      {
+        "id": "after-finance-reports",
+        "fromId": "finance",
+        "toId": "board",
+        "type": "reports_to",
+        "evidence": [
+          {
+            "documentId": "after-structure",
+            "locator": "Section 4",
+            "quote": "Finance (finance) reports to board."
+          }
+        ]
+      },
+      {
+        "id": "after-regional-reports",
+        "fromId": "regional",
+        "toId": "board",
+        "type": "reports_to",
+        "evidence": [
+          {
+            "documentId": "after-structure",
+            "locator": "Section 5",
+            "quote": "Regional operations (regional) reports to board."
+          }
+        ]
+      },
+      {
+        "id": "after-shared-reports",
+        "fromId": "shared",
+        "toId": "board",
+        "type": "reports_to",
+        "evidence": [
+          {
+            "documentId": "after-structure",
+            "locator": "Section 6",
+            "quote": "Shared services (shared) reports to board."
+          }
+        ]
+      },
+      {
+        "id": "after-support-reports",
+        "fromId": "support",
+        "toId": "board",
+        "type": "reports_to",
+        "evidence": [
+          {
+            "documentId": "after-structure",
+            "locator": "Section 7",
+            "quote": "Customer service (support) reports to board."
+          }
+        ]
+      },
+      {
+        "id": "after-audit-reports",
+        "fromId": "audit",
+        "toId": "finance",
+        "type": "reports_to",
+        "evidence": [
+          {
+            "documentId": "after-structure",
+            "locator": "Section 8",
+            "quote": "Internal audit (audit) reports to finance."
+          }
+        ]
+      }
+    ]
+  }
+}

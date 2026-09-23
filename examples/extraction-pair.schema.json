@@ -1,0 +1,1517 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "schemaVersion": {
+      "type": "string",
+      "const": "2.0"
+    },
+    "title": {
+      "type": "string",
+      "minLength": 1
+    },
+    "before": {
+      "type": "object",
+      "properties": {
+        "schemaVersion": {
+          "type": "string",
+          "const": "2.0"
+        },
+        "revision": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 120
+            },
+            "label": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200
+            },
+            "date": {
+              "type": "string",
+              "format": "date",
+              "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+            }
+          },
+          "required": [
+            "id",
+            "label",
+            "date"
+          ],
+          "additionalProperties": false
+        },
+        "documents": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 120
+              },
+              "title": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 300
+              },
+              "text": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 500000
+              },
+              "sourceUrl": {
+                "type": "string",
+                "format": "uri"
+              },
+              "ingestionNotes": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "sha256": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "id",
+              "title",
+              "text",
+              "sha256"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "graph": {
+          "type": "object",
+          "properties": {
+            "nodes": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "kind": {
+                    "type": "string",
+                    "enum": [
+                      "unit",
+                      "position",
+                      "external",
+                      "group"
+                    ]
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "aliases": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "scopeId": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "origin": {
+                    "type": "string",
+                    "enum": [
+                      "rule",
+                      "agent",
+                      "manual"
+                    ]
+                  },
+                  "evidence": {
+                    "minItems": 1,
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "documentId": {
+                          "type": "string"
+                        },
+                        "clauseId": {
+                          "type": "string"
+                        },
+                        "locator": {
+                          "type": "string"
+                        },
+                        "quote": {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        "span": {
+                          "type": "array",
+                          "prefixItems": [
+                            {
+                              "type": "integer",
+                              "minimum": 0,
+                              "maximum": 9007199254740991
+                            },
+                            {
+                              "type": "integer",
+                              "exclusiveMinimum": 0,
+                              "maximum": 9007199254740991
+                            }
+                          ],
+                          "items": false,
+                          "minItems": 2,
+                          "maxItems": 2
+                        }
+                      },
+                      "required": [
+                        "documentId",
+                        "clauseId",
+                        "locator",
+                        "quote",
+                        "span"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "functionIds": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "required": [
+                  "id",
+                  "kind",
+                  "name",
+                  "aliases",
+                  "scopeId",
+                  "origin",
+                  "evidence",
+                  "functionIds"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "edges": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "type": {
+                    "type": "string",
+                    "enum": [
+                      "part_of",
+                      "member_of",
+                      "heads",
+                      "reports_functionally",
+                      "reports_administratively",
+                      "reports_disciplinarily",
+                      "accountable_to",
+                      "oversees",
+                      "audits"
+                    ]
+                  },
+                  "source": {
+                    "type": "string"
+                  },
+                  "target": {
+                    "type": "string"
+                  },
+                  "origin": {
+                    "type": "string",
+                    "enum": [
+                      "rule",
+                      "agent",
+                      "manual"
+                    ]
+                  },
+                  "evidence": {
+                    "minItems": 1,
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "documentId": {
+                          "type": "string"
+                        },
+                        "clauseId": {
+                          "type": "string"
+                        },
+                        "locator": {
+                          "type": "string"
+                        },
+                        "quote": {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        "span": {
+                          "type": "array",
+                          "prefixItems": [
+                            {
+                              "type": "integer",
+                              "minimum": 0,
+                              "maximum": 9007199254740991
+                            },
+                            {
+                              "type": "integer",
+                              "exclusiveMinimum": 0,
+                              "maximum": 9007199254740991
+                            }
+                          ],
+                          "items": false,
+                          "minItems": 2,
+                          "maxItems": 2
+                        }
+                      },
+                      "required": [
+                        "documentId",
+                        "clauseId",
+                        "locator",
+                        "quote",
+                        "span"
+                      ],
+                      "additionalProperties": false
+                    }
+                  }
+                },
+                "required": [
+                  "id",
+                  "type",
+                  "source",
+                  "target",
+                  "origin",
+                  "evidence"
+                ],
+                "additionalProperties": false
+              }
+            }
+          },
+          "required": [
+            "nodes",
+            "edges"
+          ],
+          "additionalProperties": false
+        },
+        "functions": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "ownerIds": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "departmentIds": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "description": {
+                "type": "string"
+              },
+              "canonical": {
+                "type": "object",
+                "properties": {
+                  "action": {
+                    "type": "string",
+                    "enum": [
+                      "execute",
+                      "prepare",
+                      "review",
+                      "approve",
+                      "monitor",
+                      "audit",
+                      "manage",
+                      "report",
+                      "maintain",
+                      "unknown"
+                    ]
+                  },
+                  "object": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 400
+                  },
+                  "process": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 400
+                  },
+                  "scope": {
+                    "maxItems": 100,
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 160
+                    }
+                  },
+                  "authority": {
+                    "type": "string",
+                    "enum": [
+                      "execution",
+                      "recommendation",
+                      "decision",
+                      "oversight",
+                      "independent_assurance",
+                      "unknown"
+                    ]
+                  },
+                  "conditions": {
+                    "maxItems": 50,
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 4000
+                    }
+                  },
+                  "modality": {
+                    "type": "string",
+                    "enum": [
+                      "required",
+                      "permitted",
+                      "prohibited",
+                      "unknown"
+                    ]
+                  },
+                  "frequency": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "maxLength": 100
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "threshold": {
+                    "anyOf": [
+                      {
+                        "type": "object",
+                        "properties": {
+                          "min": {
+                            "type": [
+                              "number",
+                              "null"
+                            ]
+                          },
+                          "max": {
+                            "type": [
+                              "number",
+                              "null"
+                            ]
+                          },
+                          "currency": {
+                            "anyOf": [
+                              {
+                                "type": "string",
+                                "maxLength": 20
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ]
+                          }
+                        },
+                        "required": [
+                          "min",
+                          "max",
+                          "currency"
+                        ],
+                        "additionalProperties": false
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  }
+                },
+                "required": [
+                  "action",
+                  "object",
+                  "process",
+                  "scope",
+                  "authority",
+                  "conditions",
+                  "modality",
+                  "frequency",
+                  "threshold"
+                ],
+                "additionalProperties": false
+              },
+              "context": {
+                "type": "object",
+                "properties": {
+                  "headingPath": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "references": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "resolvedReferences": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "exceptions": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "required": [
+                  "headingPath",
+                  "references",
+                  "resolvedReferences",
+                  "exceptions"
+                ],
+                "additionalProperties": false
+              },
+              "evidence": {
+                "minItems": 1,
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "documentId": {
+                      "type": "string"
+                    },
+                    "clauseId": {
+                      "type": "string"
+                    },
+                    "locator": {
+                      "type": "string"
+                    },
+                    "quote": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "span": {
+                      "type": "array",
+                      "prefixItems": [
+                        {
+                          "type": "integer",
+                          "minimum": 0,
+                          "maximum": 9007199254740991
+                        },
+                        {
+                          "type": "integer",
+                          "exclusiveMinimum": 0,
+                          "maximum": 9007199254740991
+                        }
+                      ],
+                      "items": false,
+                      "minItems": 2,
+                      "maxItems": 2
+                    }
+                  },
+                  "required": [
+                    "documentId",
+                    "clauseId",
+                    "locator",
+                    "quote",
+                    "span"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "origin": {
+                "type": "string",
+                "enum": [
+                  "rule",
+                  "agent",
+                  "manual"
+                ]
+              },
+              "uncertainties": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            },
+            "required": [
+              "id",
+              "ownerIds",
+              "departmentIds",
+              "description",
+              "canonical",
+              "context",
+              "evidence",
+              "origin",
+              "uncertainties"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "issues": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "code": {
+                "type": "string"
+              },
+              "severity": {
+                "type": "string",
+                "enum": [
+                  "info",
+                  "warning",
+                  "error"
+                ]
+              },
+              "message": {
+                "type": "string"
+              },
+              "entityIds": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "evidence": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "documentId": {
+                      "type": "string"
+                    },
+                    "clauseId": {
+                      "type": "string"
+                    },
+                    "locator": {
+                      "type": "string"
+                    },
+                    "quote": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "span": {
+                      "type": "array",
+                      "prefixItems": [
+                        {
+                          "type": "integer",
+                          "minimum": 0,
+                          "maximum": 9007199254740991
+                        },
+                        {
+                          "type": "integer",
+                          "exclusiveMinimum": 0,
+                          "maximum": 9007199254740991
+                        }
+                      ],
+                      "items": false,
+                      "minItems": 2,
+                      "maxItems": 2
+                    }
+                  },
+                  "required": [
+                    "documentId",
+                    "clauseId",
+                    "locator",
+                    "quote",
+                    "span"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            },
+            "required": [
+              "id",
+              "code",
+              "severity",
+              "message",
+              "entityIds",
+              "evidence"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "coverage": {
+          "type": "object",
+          "properties": {
+            "totalClauses": {
+              "type": "number"
+            },
+            "reviewedClauses": {
+              "type": "number"
+            },
+            "unreviewedClauseIds": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "status": {
+              "type": "string",
+              "enum": [
+                "needs_review",
+                "validated"
+              ]
+            }
+          },
+          "required": [
+            "totalClauses",
+            "reviewedClauses",
+            "unreviewedClauseIds",
+            "status"
+          ],
+          "additionalProperties": false
+        },
+        "trace": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "stage": {
+                "type": "string"
+              },
+              "action": {
+                "type": "string"
+              },
+              "detail": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "stage",
+              "action",
+              "detail"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "metrics": {
+          "type": "object",
+          "properties": {
+            "model": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "calls": {
+              "type": "number"
+            },
+            "cacheHits": {
+              "type": "number"
+            },
+            "inputTokens": {
+              "type": "number"
+            },
+            "outputTokens": {
+              "type": "number"
+            },
+            "durationMs": {
+              "type": "number"
+            }
+          },
+          "required": [
+            "model",
+            "calls",
+            "cacheHits",
+            "inputTokens",
+            "outputTokens",
+            "durationMs"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "schemaVersion",
+        "revision",
+        "documents",
+        "graph",
+        "functions",
+        "issues",
+        "coverage",
+        "trace",
+        "metrics"
+      ],
+      "additionalProperties": false
+    },
+    "after": {
+      "type": "object",
+      "properties": {
+        "schemaVersion": {
+          "type": "string",
+          "const": "2.0"
+        },
+        "revision": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 120
+            },
+            "label": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200
+            },
+            "date": {
+              "type": "string",
+              "format": "date",
+              "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+            }
+          },
+          "required": [
+            "id",
+            "label",
+            "date"
+          ],
+          "additionalProperties": false
+        },
+        "documents": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 120
+              },
+              "title": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 300
+              },
+              "text": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 500000
+              },
+              "sourceUrl": {
+                "type": "string",
+                "format": "uri"
+              },
+              "ingestionNotes": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "sha256": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "id",
+              "title",
+              "text",
+              "sha256"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "graph": {
+          "type": "object",
+          "properties": {
+            "nodes": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "kind": {
+                    "type": "string",
+                    "enum": [
+                      "unit",
+                      "position",
+                      "external",
+                      "group"
+                    ]
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "aliases": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "scopeId": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "origin": {
+                    "type": "string",
+                    "enum": [
+                      "rule",
+                      "agent",
+                      "manual"
+                    ]
+                  },
+                  "evidence": {
+                    "minItems": 1,
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "documentId": {
+                          "type": "string"
+                        },
+                        "clauseId": {
+                          "type": "string"
+                        },
+                        "locator": {
+                          "type": "string"
+                        },
+                        "quote": {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        "span": {
+                          "type": "array",
+                          "prefixItems": [
+                            {
+                              "type": "integer",
+                              "minimum": 0,
+                              "maximum": 9007199254740991
+                            },
+                            {
+                              "type": "integer",
+                              "exclusiveMinimum": 0,
+                              "maximum": 9007199254740991
+                            }
+                          ],
+                          "items": false,
+                          "minItems": 2,
+                          "maxItems": 2
+                        }
+                      },
+                      "required": [
+                        "documentId",
+                        "clauseId",
+                        "locator",
+                        "quote",
+                        "span"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "functionIds": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "required": [
+                  "id",
+                  "kind",
+                  "name",
+                  "aliases",
+                  "scopeId",
+                  "origin",
+                  "evidence",
+                  "functionIds"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "edges": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "type": {
+                    "type": "string",
+                    "enum": [
+                      "part_of",
+                      "member_of",
+                      "heads",
+                      "reports_functionally",
+                      "reports_administratively",
+                      "reports_disciplinarily",
+                      "accountable_to",
+                      "oversees",
+                      "audits"
+                    ]
+                  },
+                  "source": {
+                    "type": "string"
+                  },
+                  "target": {
+                    "type": "string"
+                  },
+                  "origin": {
+                    "type": "string",
+                    "enum": [
+                      "rule",
+                      "agent",
+                      "manual"
+                    ]
+                  },
+                  "evidence": {
+                    "minItems": 1,
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "documentId": {
+                          "type": "string"
+                        },
+                        "clauseId": {
+                          "type": "string"
+                        },
+                        "locator": {
+                          "type": "string"
+                        },
+                        "quote": {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        "span": {
+                          "type": "array",
+                          "prefixItems": [
+                            {
+                              "type": "integer",
+                              "minimum": 0,
+                              "maximum": 9007199254740991
+                            },
+                            {
+                              "type": "integer",
+                              "exclusiveMinimum": 0,
+                              "maximum": 9007199254740991
+                            }
+                          ],
+                          "items": false,
+                          "minItems": 2,
+                          "maxItems": 2
+                        }
+                      },
+                      "required": [
+                        "documentId",
+                        "clauseId",
+                        "locator",
+                        "quote",
+                        "span"
+                      ],
+                      "additionalProperties": false
+                    }
+                  }
+                },
+                "required": [
+                  "id",
+                  "type",
+                  "source",
+                  "target",
+                  "origin",
+                  "evidence"
+                ],
+                "additionalProperties": false
+              }
+            }
+          },
+          "required": [
+            "nodes",
+            "edges"
+          ],
+          "additionalProperties": false
+        },
+        "functions": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "ownerIds": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "departmentIds": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "description": {
+                "type": "string"
+              },
+              "canonical": {
+                "type": "object",
+                "properties": {
+                  "action": {
+                    "type": "string",
+                    "enum": [
+                      "execute",
+                      "prepare",
+                      "review",
+                      "approve",
+                      "monitor",
+                      "audit",
+                      "manage",
+                      "report",
+                      "maintain",
+                      "unknown"
+                    ]
+                  },
+                  "object": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 400
+                  },
+                  "process": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 400
+                  },
+                  "scope": {
+                    "maxItems": 100,
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 160
+                    }
+                  },
+                  "authority": {
+                    "type": "string",
+                    "enum": [
+                      "execution",
+                      "recommendation",
+                      "decision",
+                      "oversight",
+                      "independent_assurance",
+                      "unknown"
+                    ]
+                  },
+                  "conditions": {
+                    "maxItems": 50,
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 4000
+                    }
+                  },
+                  "modality": {
+                    "type": "string",
+                    "enum": [
+                      "required",
+                      "permitted",
+                      "prohibited",
+                      "unknown"
+                    ]
+                  },
+                  "frequency": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "maxLength": 100
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "threshold": {
+                    "anyOf": [
+                      {
+                        "type": "object",
+                        "properties": {
+                          "min": {
+                            "type": [
+                              "number",
+                              "null"
+                            ]
+                          },
+                          "max": {
+                            "type": [
+                              "number",
+                              "null"
+                            ]
+                          },
+                          "currency": {
+                            "anyOf": [
+                              {
+                                "type": "string",
+                                "maxLength": 20
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ]
+                          }
+                        },
+                        "required": [
+                          "min",
+                          "max",
+                          "currency"
+                        ],
+                        "additionalProperties": false
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  }
+                },
+                "required": [
+                  "action",
+                  "object",
+                  "process",
+                  "scope",
+                  "authority",
+                  "conditions",
+                  "modality",
+                  "frequency",
+                  "threshold"
+                ],
+                "additionalProperties": false
+              },
+              "context": {
+                "type": "object",
+                "properties": {
+                  "headingPath": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "references": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "resolvedReferences": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "exceptions": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "required": [
+                  "headingPath",
+                  "references",
+                  "resolvedReferences",
+                  "exceptions"
+                ],
+                "additionalProperties": false
+              },
+              "evidence": {
+                "minItems": 1,
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "documentId": {
+                      "type": "string"
+                    },
+                    "clauseId": {
+                      "type": "string"
+                    },
+                    "locator": {
+                      "type": "string"
+                    },
+                    "quote": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "span": {
+                      "type": "array",
+                      "prefixItems": [
+                        {
+                          "type": "integer",
+                          "minimum": 0,
+                          "maximum": 9007199254740991
+                        },
+                        {
+                          "type": "integer",
+                          "exclusiveMinimum": 0,
+                          "maximum": 9007199254740991
+                        }
+                      ],
+                      "items": false,
+                      "minItems": 2,
+                      "maxItems": 2
+                    }
+                  },
+                  "required": [
+                    "documentId",
+                    "clauseId",
+                    "locator",
+                    "quote",
+                    "span"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "origin": {
+                "type": "string",
+                "enum": [
+                  "rule",
+                  "agent",
+                  "manual"
+                ]
+              },
+              "uncertainties": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            },
+            "required": [
+              "id",
+              "ownerIds",
+              "departmentIds",
+              "description",
+              "canonical",
+              "context",
+              "evidence",
+              "origin",
+              "uncertainties"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "issues": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "code": {
+                "type": "string"
+              },
+              "severity": {
+                "type": "string",
+                "enum": [
+                  "info",
+                  "warning",
+                  "error"
+                ]
+              },
+              "message": {
+                "type": "string"
+              },
+              "entityIds": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "evidence": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "documentId": {
+                      "type": "string"
+                    },
+                    "clauseId": {
+                      "type": "string"
+                    },
+                    "locator": {
+                      "type": "string"
+                    },
+                    "quote": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "span": {
+                      "type": "array",
+                      "prefixItems": [
+                        {
+                          "type": "integer",
+                          "minimum": 0,
+                          "maximum": 9007199254740991
+                        },
+                        {
+                          "type": "integer",
+                          "exclusiveMinimum": 0,
+                          "maximum": 9007199254740991
+                        }
+                      ],
+                      "items": false,
+                      "minItems": 2,
+                      "maxItems": 2
+                    }
+                  },
+                  "required": [
+                    "documentId",
+                    "clauseId",
+                    "locator",
+                    "quote",
+                    "span"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            },
+            "required": [
+              "id",
+              "code",
+              "severity",
+              "message",
+              "entityIds",
+              "evidence"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "coverage": {
+          "type": "object",
+          "properties": {
+            "totalClauses": {
+              "type": "number"
+            },
+            "reviewedClauses": {
+              "type": "number"
+            },
+            "unreviewedClauseIds": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "status": {
+              "type": "string",
+              "enum": [
+                "needs_review",
+                "validated"
+              ]
+            }
+          },
+          "required": [
+            "totalClauses",
+            "reviewedClauses",
+            "unreviewedClauseIds",
+            "status"
+          ],
+          "additionalProperties": false
+        },
+        "trace": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "stage": {
+                "type": "string"
+              },
+              "action": {
+                "type": "string"
+              },
+              "detail": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "stage",
+              "action",
+              "detail"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "metrics": {
+          "type": "object",
+          "properties": {
+            "model": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "calls": {
+              "type": "number"
+            },
+            "cacheHits": {
+              "type": "number"
+            },
+            "inputTokens": {
+              "type": "number"
+            },
+            "outputTokens": {
+              "type": "number"
+            },
+            "durationMs": {
+              "type": "number"
+            }
+          },
+          "required": [
+            "model",
+            "calls",
+            "cacheHits",
+            "inputTokens",
+            "outputTokens",
+            "durationMs"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "schemaVersion",
+        "revision",
+        "documents",
+        "graph",
+        "functions",
+        "issues",
+        "coverage",
+        "trace",
+        "metrics"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "required": [
+    "schemaVersion",
+    "title",
+    "before",
+    "after"
+  ],
+  "additionalProperties": false
+}
