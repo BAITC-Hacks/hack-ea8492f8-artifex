@@ -1,0 +1,70 @@
+{
+  "meta": {
+    "version": 2,
+    "note": "Машинный формат золотого набора. Человеческий разбор с обоснованием — docs/case-analysis.md. JSON, а не YAML: стандартная библиотека Python читает его без зависимостей.",
+    "before": "ia_charter_rev8",
+    "after": "ia_charter_rev9",
+    "scope": "corpus/ — выдержка из документов организатора; часть размеченных отклонений лежит вне выдержки и помечена in_corpus=false"
+  },
+  "findings": [
+    {"id": "L1", "type": "lost", "in_corpus": true, "clauses": ["5.6.3", "11.2"],
+     "note": "полномочие по объёму внешней оценки утрачено при сохранении обязанности её проводить"},
+    {"id": "L2", "type": "lost", "in_corpus": true, "clauses": ["5.6.2"],
+     "note": "формирование групп контроля качества"},
+    {"id": "L3", "type": "lost", "in_corpus": true, "clauses": ["5.7.1"],
+     "note": "программы предоставления гарантий и консультаций"},
+    {"id": "L4", "type": "lost", "in_corpus": true, "clauses": ["5.7.2"],
+     "note": "доведение результатов консультационных услуг"},
+    {"id": "L5", "type": "lost", "in_corpus": true, "clauses": ["12.1.4"],
+     "note": "отчётность о соблюдении международных стандартов"},
+    {"id": "L6", "type": "lost", "in_corpus": true, "clauses": ["5.3.4", "5.3.5"],
+     "note": "контроль сроков выполнения графика проверки"},
+    {"id": "L7", "type": "lost", "in_corpus": true, "clauses": ["5.5.8"],
+     "note": "предложения по повышению проф. уровня работников БВА"},
+
+    {"id": "W1", "type": "weakened", "in_corpus": true, "clauses": ["9.15"],
+     "note": "осуществляется -> может осуществляться"},
+    {"id": "W2", "type": "weakened", "in_corpus": true, "clauses": ["9.55"],
+     "note": "должен -> изъявительное наклонение"},
+    {"id": "W3", "type": "weakened", "in_corpus": true, "clauses": ["5.5.5", "5.5.3"],
+     "note": "снята периодичность отчётности"},
+    {"id": "W4", "type": "weakened", "in_corpus": true, "clauses": ["5.6.1"],
+     "note": "программы проверок -> программы в зоне деятельности"},
+    {"id": "W5", "type": "weakened", "in_corpus": false, "clauses": ["1.10"],
+     "note": "международные стандарты -> стандарты"},
+
+    {"id": "T1", "type": "transferred", "in_corpus": true, "clauses": ["5.4.4", "5.3.3"],
+     "note": "Карта гарантий: ДНМ -> ДИТААД/ДОА"},
+    {"id": "T2", "type": "transferred", "in_corpus": true, "clauses": ["9.37"],
+     "note": "делегирование контроля -> Директор операционного аудита"},
+
+    {"id": "D1", "type": "duplicated", "in_corpus": true, "clauses": ["3.6", "3.8"],
+     "note": "двойное подчинение должностей в ред.8"},
+    {"id": "D2", "type": "duplicated", "in_corpus": true, "clauses": ["5.1.4", "5.3.7", "5.5.5"],
+     "note": "контроль устранения недостатков у трёх владельцев"},
+    {"id": "D3", "type": "duplicated", "in_corpus": true, "clauses": ["5.1.1", "5.5.7"],
+     "note": "формирование плана работ БВА"},
+
+    {"id": "C1", "type": "collision", "in_corpus": true, "clauses": ["2.4.7", "5.8.1"],
+     "note": "содействие в разработке процедур против запрета участвовать в реализации"},
+    {"id": "C2", "type": "collision", "in_corpus": true, "clauses": ["5.3.2", "5.8.1"],
+     "note": "автоматизация процессов ВА против запрета внедрять процедуры"},
+
+    {"id": "K1", "type": "conflict_of_interest", "in_corpus": true, "clauses": ["11.1", "10.3", "3.5"],
+     "note": "самооценка качества внутреннего аудита"},
+    {"id": "K2", "type": "conflict_of_interest", "in_corpus": false, "clauses": ["4"],
+     "note": "совмещение участия в органах управления ДЗО с их аудитом"},
+
+    {"id": "BR1", "type": "broken_reference", "in_corpus": true, "clauses": ["5.10.2", "5.10.5", "5.8.1", "5.7.1"],
+     "note": "ссылка пережила перенумерацию раздела 5"},
+
+    {"id": "O1", "type": "orphan", "in_corpus": true, "clauses": ["11.2"],
+     "note": "внешняя оценка обязательна, полномочие её организовать не закреплено"}
+  ],
+  "negative_tests": [
+    {"id": "N1", "must_not_fire": "duplicated", "clauses": ["2.4.17", "5.3.3"],
+     "reason": "вертикальный каскад: общая функция ВА и функция департамента связаны подчинением"},
+    {"id": "N3", "must_not_fire": "lost", "clauses": ["9.37"],
+     "reason": "ссылка на упразднённое звено корректно переадресована"}
+  ]
+}
