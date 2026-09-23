@@ -188,8 +188,10 @@ export type Match = {
 export type DepartmentChange = {
   beforeIds: string[];
   afterIds: string[];
-  status: 'preserved' | 'renamed' | 'split' | 'merged' | 'created' | 'removed';
+  status: 'preserved' | 'transformed' | 'renamed' | 'split' | 'merged' | 'created' | 'removed';
   basis: 'explicit' | 'identity' | 'name' | 'unmapped';
+  reason?: string;
+  evidence?: EvidenceRef[];
 };
 export type AnalysisResult = {
   extraction?: ExtractedPair;

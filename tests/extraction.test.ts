@@ -8,6 +8,8 @@ import { createAgentSession, type AgentSession } from '../server/extraction/agen
 import { adaptGraph } from '../server/adapters/graph.js';
 import { normalizeGraph } from '../server/normalization.js';
 import { analyze } from '../server/engine/analyze.js';
+import { htmlReport } from '../server/report.js';
+import { buildSupplementary, validateSupplementary } from '../server/extraction/supplementary.js';
 import { Store } from '../server/store.js';
 import { ExtractionSchema, type Extraction, type ExtractionRequest } from '../shared/extraction.js';
 import { demoGraph } from '../server/demo.js';
@@ -172,7 +174,17 @@ describe('full organizer documents (hand-checked structural expectations)', () =
     const input = adaptGraph({ schemaVersion: '2.0', title: 'Real structural comparison', before, after });
     const result = analyze((await normalizeGraph(input, 'local')).graph);
     expect(result.departmentChanges.filter((d) => d.status === 'created')).toHaveLength(2);
-    expect(result.departmentChanges.filter((d) => d.status === 'preserved')).toHaveLength(3);
+    const quality = result.departmentChanges.find((d) =>
+      d.beforeIds.some((id) => before.graph.nodes.find((n) => n.id === id)?.aliases.includes('ДККМ')),
+    )!;
+    expect(quality.status).toBe('transformed');
+    expect(new Set(quality.evidence?.map((e) => e.snapshot))).toEqual(new Set(['before', 'after']));
+    expect(quality.evidence?.every((e) => e.verified)).toBe(true);
+    const report = htmlReport({ result, reviews: {} });
+    expect(report).toContain('Conclusion');
+    expect(report).toContain('functional continuity cannot yet be assessed');
+    expect(report).toContain('Action plan');
+    expect(report).toContain('Internal audit regulation, edition 9');
   });
   it('rejects tampered source spans before comparison', () => {
     const bad = structuredClone(after);
@@ -181,6 +193,46 @@ describe('full organizer documents (hand-checked structural expectations)', () =
     expect(() => adaptGraph({ schemaVersion: '2.0', title: 'Bad input', before, after: bad })).toThrow(
       'corrections',
     );
+  });
+  it('returns cited reference and peer-structure candidates without claiming legal compliance', () => {
+    const pair = { schemaVersion: '2.0' as const, title: 'Example', before, after };
+    const supplementary = buildSupplementary(
+      pair,
+      [
+        {
+          id: 'reference',
+          title: 'Provided standard',
+          text: '1. Организация должна проводить внутренний аудит.',
+        },
+      ],
+      [
+        {
+          name: 'Peer',
+          documents: [
+            {
+              id: 'peer',
+              title: 'Peer structure',
+              text: '1. Департамент операционного аудита (ДОА) осуществляет проверки.',
+            },
+          ],
+        },
+      ],
+    );
+    expect(supplementary.checks.some((check) => check.category === 'reference')).toBe(true);
+    expect(supplementary.checks.some((check) => check.category === 'operator')).toBe(true);
+    expect(supplementary.checks.every((check) => check.evidence.length > 0)).toBe(true);
+    expect(
+      supplementary.checks.find((check) => check.title.includes('Департамент операционного аудита'))?.status,
+    ).toBe('candidate_match');
+    expect(supplementary.checks.find((check) => check.title.includes('Департамент ИТ-аудита'))?.status).toBe(
+      'needs_review',
+    );
+    const tampered = structuredClone(supplementary);
+    tampered.checks[0].evidence[0].span[0]++;
+    expect(() => validateSupplementary(pair, tampered)).toThrow('Invalid supplementary citation');
+    const duplicate = structuredClone(supplementary);
+    duplicate.documents[0].id = pair.after.documents[0].id;
+    expect(() => validateSupplementary(pair, duplicate)).toThrow('must differ');
   });
   it('verifies issue evidence too, including its clause locator', () => {
     const bad = structuredClone(after);

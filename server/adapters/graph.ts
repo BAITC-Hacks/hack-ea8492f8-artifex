@@ -3,6 +3,7 @@ import type { GraphInput } from '../../shared/schema.js';
 import { ExtractedPairSchema, type Extraction } from '../../shared/extraction.js';
 import { validateExtraction } from '../extraction/pipeline.js';
 import { InputError } from '../engine/validate.js';
+import { validateSupplementary } from '../extraction/supplementary.js';
 
 export function extractionSnapshot(input: Extraction) {
   const extraction = validateExtraction(input);
@@ -56,6 +57,7 @@ export function adaptGraph(payload: unknown): GraphInput {
     payload.schemaVersion === '2.0'
   ) {
     const pair = ExtractedPairSchema.parse(payload);
+    if (pair.supplementary) validateSupplementary(pair, pair.supplementary);
     return validateGraph({
       schemaVersion: '1.0',
       title: pair.title,

@@ -158,6 +158,26 @@ function departmentChanges(graph: NormalizedGraph): DepartmentChange[] {
   const out: DepartmentChange[] = [],
     linkedAfter = new Set<string>(),
     processed = new Set<string>();
+  const roles = (side: 'before' | 'after', unitId: string) =>
+    graph[side].departments.filter((d) => d.kind === 'position' && d.parentId === unitId).map((d) => d.name);
+  const sources = (side: 'before' | 'after', unitId: string) => {
+    const snapshot = graph[side];
+    return evidenceRefs(
+      snapshot,
+      side,
+      [
+        ...(snapshot.departments.find((d) => d.id === unitId)?.evidence ?? []),
+        ...snapshot.departments
+          .filter((d) => d.kind === 'position' && d.parentId === unitId)
+          .flatMap((d) => d.evidence),
+      ].filter(
+        (e, i, all) =>
+          all.findIndex(
+            (v) => v.documentId === e.documentId && v.locator === e.locator && v.quote === e.quote,
+          ) === i,
+      ),
+    );
+  };
   for (const old of graph.before.departments.filter((d) => !d.kind || d.kind === 'unit')) {
     const next = graph.after.departments
       .filter((d) => !d.kind || d.kind === 'unit')
@@ -173,6 +193,13 @@ function departmentChanges(graph: NormalizedGraph): DepartmentChange[] {
     const key = JSON.stringify([predecessors, next.map((d) => d.id).sort()]);
     if (processed.has(key)) continue;
     processed.add(key);
+    const beforeRoles = roles('before', old.id);
+    const afterRoles = next.length === 1 ? roles('after', next[0].id) : [];
+    const changedComposition =
+      next.length === 1 &&
+      beforeRoles.length > 0 &&
+      afterRoles.length > 0 &&
+      beforeRoles.length !== afterRoles.length;
     out.push({
       beforeIds: predecessors.length ? predecessors : [old.id],
       afterIds: next.map((d) => d.id),
@@ -182,9 +209,11 @@ function departmentChanges(graph: NormalizedGraph): DepartmentChange[] {
           ? 'split'
           : predecessors.length > 1
             ? 'merged'
-            : normalizeTerm(old.name) === normalizeTerm(next[0].name)
-              ? 'preserved'
-              : 'renamed',
+            : changedComposition
+              ? 'transformed'
+              : normalizeTerm(old.name) === normalizeTerm(next[0].name)
+                ? 'preserved'
+                : 'renamed',
       basis: !next.length
         ? 'unmapped'
         : next.some((d) => d.previousIds.includes(old.id))
@@ -192,11 +221,24 @@ function departmentChanges(graph: NormalizedGraph): DepartmentChange[] {
           : next.some((d) => d.id === old.id)
             ? 'identity'
             : 'name',
+      reason: changedComposition
+        ? `Documented positions changed from ${beforeRoles.length} to ${afterRoles.length}; review the staffing change before confirming a reorganization.`
+        : next.length
+          ? 'Mapped by documented unit identity or name; functional continuity requires separate review.'
+          : 'No corresponding unit was identified in the supplied after structure.',
+      evidence: [...sources('before', old.id), ...next.flatMap((d) => sources('after', d.id))],
     });
   }
   for (const dept of graph.after.departments.filter((d) => !d.kind || d.kind === 'unit'))
     if (!linkedAfter.has(dept.id))
-      out.push({ beforeIds: [], afterIds: [dept.id], status: 'created', basis: 'unmapped' });
+      out.push({
+        beforeIds: [],
+        afterIds: [dept.id],
+        status: 'created',
+        basis: 'unmapped',
+        reason: 'No corresponding unit was identified in the supplied before structure.',
+        evidence: sources('after', dept.id),
+      });
   return out;
 }
 
