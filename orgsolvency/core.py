@@ -101,7 +101,9 @@ class Clause:
             return "header"
         if self.modality == 0:
             return "prohibition"
-        if self.scope and self.chapter in ("3", "5"):
+        # Полномочие — это норма с владельцем. Номер главы не используется:
+        # в разных документах разделы про подразделения нумеруются по-разному.
+        if self.scope:
             return "capability"
         return "obligation"
 

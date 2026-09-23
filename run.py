@@ -42,7 +42,7 @@ def main(argv):
         cl = ", ".join(e["clause"] for e in f["evidence"][:3])
         print(f"    [{f['severity']:8}] {f['type']:20} п. {cl}")
 
-    if os.path.exists("golden/golden.json") and "corpus/" in before_path:
+    if os.path.exists("golden/golden.json") and before_path.endswith("rev8.txt"):
         print(score_report(score(findings)))
 
     print("  отчёт: out/report.html    машинный вывод: out/findings.json\n")
