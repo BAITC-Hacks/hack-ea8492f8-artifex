@@ -128,8 +128,22 @@ export function htmlReport(run: AnalysisRun): string {
       )
       .join('') || '<li>No grounded redistribution action can be proposed from the current comparison.</li>'
   }</ol>
-  <h2>Review findings</h2>${decisionFindings.length ? decisionFindings.slice(0, 50).map((f) => findingHtml(f)).join('') : '<p>No grounded functional finding was raised by the configured rules. This does not establish that the organization is risk-free.</p>'}${decisionFindings.length > 50 ? `<p>${decisionFindings.length - 50} further findings remain in the JSON and CSV exports.</p>` : ''}
-  ${extractionBacklog.length ? `<h2>Extraction backlog</h2><p>${extractionBacklog.length} responsibility candidates require owner review before functional comparison. The first 12 source-linked examples follow; the complete list remains in the JSON and CSV exports.</p>${extractionBacklog.slice(0, 12).map((f) => findingHtml(f, true)).join('')}` : ''}
+  <h2>Review findings</h2>${
+    decisionFindings.length
+      ? decisionFindings
+          .slice(0, 50)
+          .map((f) => findingHtml(f))
+          .join('')
+      : '<p>No grounded functional finding was raised by the configured rules. This does not establish that the organization is risk-free.</p>'
+  }${decisionFindings.length > 50 ? `<p>${decisionFindings.length - 50} further findings remain in the JSON and CSV exports.</p>` : ''}
+  ${
+    extractionBacklog.length
+      ? `<h2>Extraction backlog</h2><p>${extractionBacklog.length} responsibility candidates require owner review before functional comparison. The first 12 source-linked examples follow; the complete list remains in the JSON and CSV exports.</p>${extractionBacklog
+          .slice(0, 12)
+          .map((f) => findingHtml(f, true))
+          .join('')}`
+      : ''
+  }
   ${supplementary ? `<h2>Standards and other operators</h2><p>Candidate comparisons based on supplied text. They are not legal-compliance or industry best-practice conclusions.</p>${supplementary.warnings.map((warning) => `<p>${escape(warning)}</p>`).join('')}${supplementary.checks.map((check) => `<section class="finding"><h3>${escape(check.title)}</h3><p class="meta">${escape(check.category)} | ${escape(check.status)}</p><p>${escape(check.explanation)}</p><p>${escape(check.recommendation)}</p>${check.evidence.map((e) => `<blockquote>${escape(e.quote)}<small>${escape(supplementaryTitle(e.documentId))}, §${escape(e.locator)}</small></blockquote>`).join('')}</section>`).join('')}` : ''}
   <h2>Unlinked after-functions</h2><ul>${r.newFunctionIds.map((id) => `<li>${escape(fn('after', id)?.description)} (${escape(dept('after', fn('after', id)!.departmentId))})</li>`).join('') || '<li>None</li>'}</ul>
   <h2>Method and limitations</h2><ul>${r.warnings.map((w) => `<li>${escape(w)}</li>`).join('')}</ul><p>${r.metrics.candidateComparisons} detailed candidate comparisons out of ${r.metrics.possibleComparisons} possible pairs. ${r.metrics.aiCalls} AI normalization calls; ${r.metrics.inputTokens} input tokens; ${r.metrics.outputTokens} output tokens. ${r.metrics.verifiedEvidence}/${r.metrics.totalEvidence} function source quotations located. Duration: ${r.metrics.durationMs} ms.</p>

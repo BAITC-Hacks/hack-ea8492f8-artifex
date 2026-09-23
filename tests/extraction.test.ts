@@ -224,9 +224,9 @@ describe('full organizer documents (hand-checked structural expectations)', () =
     expect(
       supplementary.checks.find((check) => check.title.includes('Департамент операционного аудита'))?.status,
     ).toBe('candidate_match');
-    expect(
-      supplementary.checks.find((check) => check.title.includes('Департамент ИТ-аудита'))?.status,
-    ).toBe('needs_review');
+    expect(supplementary.checks.find((check) => check.title.includes('Департамент ИТ-аудита'))?.status).toBe(
+      'needs_review',
+    );
     const tampered = structuredClone(supplementary);
     tampered.checks[0].evidence[0].span[0]++;
     expect(() => validateSupplementary(pair, tampered)).toThrow('Invalid supplementary citation');

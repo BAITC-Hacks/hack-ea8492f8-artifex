@@ -81,7 +81,9 @@ export function buildSupplementary(
   if (referenceDocuments.length) {
     const index = indexDocuments(referenceDocuments);
     const norms = index.clauses.filter((clause) =>
-      /\b(?:must|shall|required|prohibited)\b|обязан[а-я]*|должн[а-я]*|не вправе|запрещ|необходимо/iu.test(clause.text),
+      /\b(?:must|shall|required|prohibited)\b|обязан[а-я]*|должн[а-я]*|не вправе|запрещ|необходимо/iu.test(
+        clause.text,
+      ),
     );
     if (!norms.length)
       output.warnings.push('No explicit obligations or prohibitions were found in the reference documents.');
@@ -145,10 +147,9 @@ export function buildSupplementary(
         category: 'operator',
         status: peerNameMatch(unit.name, best.peer.name) ? 'candidate_match' : 'needs_review',
         title: `${operator.name}: ${unit.name}`,
-        explanation:
-          peerNameMatch(unit.name, best.peer.name)
-            ? `A similarly named peer unit (${best.peer.name}) was found. This is a structural comparison candidate, not a best-practice judgment.`
-            : `No clear counterpart was found by name. The closest extracted peer unit was ${best.peer.name}; its mandate and staffing require manual comparison.`,
+        explanation: peerNameMatch(unit.name, best.peer.name)
+          ? `A similarly named peer unit (${best.peer.name}) was found. This is a structural comparison candidate, not a best-practice judgment.`
+          : `No clear counterpart was found by name. The closest extracted peer unit was ${best.peer.name}; its mandate and staffing require manual comparison.`,
         recommendation:
           'Compare reporting lines, documented roles and mandates before considering a structural change.',
         entityIds: [unit.id],
