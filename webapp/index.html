@@ -80,17 +80,20 @@ body{margin:0;background:var(--bg);color:var(--fg);
 .mark i{font-style:normal;color:var(--fg3);font-weight:450;font-size:13px}
 @media(max-width:760px){.mark i{display:none}}
 .grow{flex:1}
-.btn{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line2);background:var(--panel);
-  color:var(--fg2);border-radius:8px;padding:6px 11px;font:inherit;font-size:13px;cursor:pointer;
-  transition:border-color .15s,color .15s,transform .15s}
-.btn:hover{border-color:var(--fg3);color:var(--fg);transform:translateY(-1px)}
-.btn svg{width:14px;height:14px}
-.badge{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--line);background:var(--panel);
-  border-radius:999px;padding:5px 12px 5px 10px;font-size:12.5px;color:var(--fg3)}
-.badge i{width:6px;height:6px;border-radius:50%;background:var(--fg3);flex:none}
-.badge.live i{background:var(--ok);box-shadow:0 0 0 3px color-mix(in oklab,var(--ok) 20%,transparent)}
-.badge b{font-weight:600;color:var(--fg2)}
-@media(max-width:900px){.badge .opt{display:none}}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;height:32px;padding:0 11px;
+  border:1px solid var(--line2);background:var(--panel);color:var(--fg2);border-radius:8px;
+  font:inherit;font-size:13px;line-height:1;white-space:nowrap;cursor:pointer;
+  transition:border-color .15s,color .15s,background .15s}
+.btn:hover{border-color:var(--fg3);color:var(--fg);background:var(--sunk)}
+.btn svg{width:15px;height:15px;flex:none}
+.btn.only{width:32px;padding:0}
+.sep{width:1px;height:20px;background:var(--line);margin:0 3px;flex:none}
+.eng{display:inline-flex;align-items:center;gap:7px;font-size:12.5px;color:var(--fg3);
+  padding:0 4px;white-space:nowrap}
+.eng i{width:6px;height:6px;border-radius:50%;background:var(--fg3);flex:none}
+.eng.live i{background:var(--ok);box-shadow:0 0 0 3px color-mix(in oklab,var(--ok) 20%,transparent)}
+@media(max-width:1060px){.btn .t{display:none}.btn{width:32px;padding:0}}
+@media(max-width:760px){.eng .t{display:none}}
 
 /* ── загрузка ── */
 .hero{padding:54px 0 32px;max-width:640px;animation:rise .5s both}
@@ -261,7 +264,9 @@ body{margin:0;background:var(--bg);color:var(--fg);
   border-radius:5px;padding:3px 7px}
 
 /* ── структура: две колонки и связи между ними ── */
-.legend{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 16px;font-size:12.5px;color:var(--fg3)}
+.legend{display:flex;gap:16px;flex-wrap:wrap;margin:0 0 6px;font-size:12.5px;color:var(--fg3)}
+.legend2{margin:0 0 18px;font-size:12.5px;color:var(--fg3);line-height:1.6;max-width:86ch}
+.legend2 b{color:var(--fg2);font-weight:600}
 .legend i{display:inline-block;width:9px;height:9px;border-radius:3px;margin-right:6px;vertical-align:-1px}
 .ustat{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;margin:0 0 18px}
 @media(max-width:700px){.ustat{grid-template-columns:repeat(2,1fr)}}
@@ -286,6 +291,13 @@ body{margin:0;background:var(--bg);color:var(--fg);
 .unit .nums b{color:var(--fg2);font-variant-numeric:tabular-nums;font-weight:600}
 .unit .tagst{display:inline-block;margin-left:6px;font-size:10px;font-weight:700;letter-spacing:.06em;
   text-transform:uppercase;padding:2px 6px;border-radius:5px;vertical-align:1px}
+.unit.pair{border-color:var(--brand)}
+.unit .link{margin-top:10px;padding:8px 9px 8px 10px;border-left:2px solid var(--line2);
+  background:var(--sunk);border-radius:0 7px 7px 0;font-size:12px;line-height:1.45;color:var(--fg2)}
+.unit .link b{font-weight:600}
+.unit .link em{display:block;font-style:normal;color:var(--fg3);font-size:11.5px;margin-top:3px}
+.unit .link.none{border-left-color:var(--c1);color:var(--c1)}
+.unit .link.new{border-left-color:var(--brand);color:var(--brand)}
 .unit .pos{margin-top:9px;padding-left:6px;display:flex;flex-wrap:wrap;gap:4px}
 .unit .pos span{font-size:11px;color:var(--fg3);background:var(--sunk);border-radius:5px;padding:2px 6px}
 .wires path{fill:none;stroke-linecap:round;transition:opacity .2s,stroke-width .2s}
@@ -333,11 +345,15 @@ body{margin:0;background:var(--bg);color:var(--fg);
     Artifex <i>· анализ организационных изменений</i>
   </span>
   <span class="grow"></span>
-  <span class="badge" id="engine" title="Слой модели включается переменными ARTIFEX_AI и ARTIFEX_AI_KEY"><i></i><span class="opt">движок:</span> <b>правила</b></span>
-  <button class="btn hide" id="copyall">Копировать заключение</button>
-  <button class="btn hide" id="export">Экспорт</button>
-  <button class="btn hide" id="again">Новый анализ</button>
-  <button class="btn" id="theme" aria-label="Сменить тему">
+  <span class="eng" id="engine" title="Слой модели включается переменными ARTIFEX_AI и ARTIFEX_AI_KEY"><i></i><span class="t">правила</span></span>
+  <span class="sep"></span>
+  <button class="btn hide" id="copyall" title="Скопировать заключение текстом">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10" stroke-linecap="round"/></svg><span class="t">Копировать</span></button>
+  <button class="btn hide" id="export" title="Выгрузить заключение в JSON">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 4v11m0 0l-4-4m4 4l4-4M5 19h14" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="t">Экспорт</span></button>
+  <button class="btn hide" id="again" title="Загрузить другие документы">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12a8 8 0 1 1 2.6 5.9" stroke-linecap="round"/><path d="M4 19v-5h5" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="t">Заново</span></button>
+  <button class="btn only" id="theme" aria-label="Сменить тему" title="Светлая или тёмная тема">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M12 2.6v2.2M12 19.2v2.2M2.6 12h2.2M19.2 12h2.2M5.4 5.4l1.5 1.5M17.1 17.1l1.5 1.5M18.6 5.4l-1.5 1.5M6.9 17.1l-1.5 1.5" stroke-linecap="round"/></svg>
   </button>
 </div>
@@ -415,6 +431,11 @@ body{margin:0;background:var(--bg);color:var(--fg);
       <span><i style="background:var(--brand)"></i>создано</span>
       <span><i style="background:var(--c1)"></i>упразднено</span>
     </div>
+    <p class="legend2">Стрелка ведёт от подразделения прежней редакции к тому, которым
+      оно стало. <b>Красный обрыв</b> — соответствия нет: подразделение упразднено, и
+      его функции нужно искать поимённо. <b>Точка слева</b> — подразделение создано
+      заново. Наведите курсор на карточку, чтобы увидеть пару; нажмите, чтобы
+      оставить в списке только относящиеся к ней выводы.</p>
     <div class="stage" id="stage">
       <svg class="wires" id="wires"></svg>
       <div class="cols">
@@ -534,7 +555,7 @@ function stagesFinish(timings) {
     el.classList.remove("run"); el.classList.add("done");
     el.querySelector(".ic").innerHTML = tick;
     const t = timings?.[i];
-    if (t) el.querySelector(".ms").textContent = t.ms + " мс";
+    if (t) el.querySelector(".ms").textContent = t.ms < 1 ? "< 1 мс" : t.ms + " мс";
   });
 }
 
@@ -580,8 +601,9 @@ $("#copyall").onclick = () => {
       `${e.doc_id === "before" ? "до" : "после"}, п. ${e.clause}`).join("; ")}` +
       (f.recommendation ? `\n  Рекомендация: ${f.recommendation}` : ""))].join("\n");
   navigator.clipboard?.writeText(text);
-  $("#copyall").textContent = "скопировано";
-  setTimeout(() => $("#copyall").textContent = "Копировать заключение", 1500);
+  const lab = $("#copyall").querySelector(".t");
+  lab.textContent = "готово";
+  setTimeout(() => lab.textContent = "Копировать", 1500);
 };
 
 /* ── защита контракта ───────────────────────────────────────────────────────
@@ -671,8 +693,8 @@ function draw(raw) {
 
   const eng = d.engine || {};
   $("#engine").classList.toggle("live", !!eng.available);
-  $("#engine").innerHTML = `<i></i><span class="opt">движок:</span> <b>${esc(eng.engine || "правила")}</b>` +
-    (eng.model ? ` <span class="opt" style="opacity:.65">${esc(eng.model)}</span>` : "");
+  $("#engine").innerHTML = `<i></i><span class="t">${esc(eng.engine || "правила")}` +
+    (eng.model ? ` · ${esc(eng.model)}` : "") + `</span>`;
 
   $("#cnt-f").textContent = d.findings.length;
   $("#cnt-s").textContent = Object.keys(d.documents).length;
@@ -695,9 +717,31 @@ const UST = {
   created:    ["создано",       "var(--brand)", "var(--bsoft)"],
   abolished:  ["упразднено",    "var(--c1)",    "var(--c1s)"]
 };
+function partnerOf(n) {
+  const L = DATA.structure.links || [];
+  const l = n.side === "before" ? L.find(x => x.from === n.id) : L.find(x => x.to === n.id);
+  if (!l) return null;
+  const other = n.side === "before"
+    ? DATA.structure.after.find(u => u.id === l.to)
+    : DATA.structure.before.find(u => u.id === l.from);
+  return other ? { unit:other, link:l } : null;
+}
 function unitCard(n, i) {
   const [label, col, soft] = UST[n.status] || UST.preserved;
   const pos = (n.positions || []).slice(0, 4);
+  const p = partnerOf(n);
+  let link;
+  if (p) {
+    const dir = n.side === "before" ? "стало" : "было";
+    link = `<div class="link"><b>${dir}:</b> ${esc(p.unit.name)}
+      <em>сопоставлено по признакам — ${esc((p.link.why || []).join("; ") || "наименование")}</em></div>`;
+  } else if (n.status === "abolished") {
+    link = `<div class="link none"><b>соответствия в новой редакции нет</b>
+      <em>функции подразделения следует искать поимённо: часть могла не перейти никому</em></div>`;
+  } else {
+    link = `<div class="link new"><b>в прежней редакции не существовало</b>
+      <em>проверьте, что функционал не дублирует действующие подразделения</em></div>`;
+  }
   return `<div class="unit lit" data-u="${esc(n.id)}" data-side="${n.side}"
             style="animation-delay:${Math.min(i * 55, 400)}ms">
     <span class="st" style="background:${col}"></span>
@@ -705,8 +749,9 @@ function unitCard(n, i) {
     ${n.abbrev ? `<div class="ab">${esc(n.abbrev)}</div>` : ""}
     <div class="nums"><span>функций <b>${n.functions}</b></span>
       <span>должностей <b>${(n.positions || []).length}</b></span></div>
-    ${pos.length ? `<div class="pos">${pos.map(p => `<span>${esc(p)}</span>`).join("")}
+    ${pos.length ? `<div class="pos">${pos.map(x => `<span>${esc(x)}</span>`).join("")}
       ${n.positions.length > 4 ? `<span>+${n.positions.length - 4}</span>` : ""}</div>` : ""}
+    ${link}
   </div>`;
 }
 function structure() {
@@ -723,6 +768,19 @@ function structure() {
     `<p class="empty">Подразделения не распознаны.</p>`;
   $("#cnt-u").textContent = st.before.length + st.after.length;
 
+  $("#stage").onmouseover = e => {
+    const u = e.target.closest(".unit"); if (!u) return;
+    const n = [...DATA.structure.before, ...DATA.structure.after]
+      .find(x => x.id === u.dataset.u && x.side === u.dataset.side);
+    const p = n && partnerOf(n);
+    const ids = new Set([u.dataset.u, p?.unit.id].filter(Boolean));
+    $$(".unit").forEach(x => x.classList.toggle("pair", ids.has(x.dataset.u)));
+    $$("#wires [data-link]").forEach(el => el.classList.toggle("fade", !ids.has(el.dataset.link)));
+  };
+  $("#stage").onmouseleave = () => {
+    $$(".unit").forEach(x => x.classList.remove("pair"));
+    $$("#wires [data-link]").forEach(el => el.classList.remove("fade"));
+  };
   $("#stage").onclick = e => {
     const u = e.target.closest(".unit"); if (!u) return;
     const id = u.dataset.u;
@@ -740,14 +798,18 @@ function wires() {
   const at = el => { const r = el.getBoundingClientRect();
     return { l:r.left - box.left, r:r.right - box.left, y:r.top - box.top + r.height / 2 } };
   const find = (id, side) => stage.querySelector(`.unit[data-u="${CSS.escape(id)}"][data-side="${side}"]`);
-  const parts = [];
+  const parts = [`<defs>
+    <marker id="ar" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7"
+            orient="auto-start-reverse"><path d="M0 0.6 L7.4 4 L0 7.4 z" fill="context-stroke"/></marker>
+  </defs>`];
   for (const l of DATA.structure.links) {
     const a = find(l.from, "before"), b = find(l.to, "after");
     if (!a || !b) continue;
     const p = at(a), q = at(b), dx = (q.l - p.r) / 2;
     const col = UST[l.status]?.[1] || "var(--fg3)";
     parts.push(`<path d="M${p.r} ${p.y} C${p.r + dx} ${p.y}, ${q.l - dx} ${q.y}, ${q.l} ${q.y}"
-      stroke="${col}" stroke-width="1.6" opacity=".55" data-link="${esc(l.from)}"></path>`);
+      stroke="${col}" stroke-width="1.7" opacity=".62" marker-end="url(#ar)"
+      data-link="${esc(l.from)}"></path>`);
   }
   // упразднённое: линия обрывается точкой
   for (const n of DATA.structure.before.filter(x => x.status === "abolished")) {
@@ -773,8 +835,11 @@ function highlight(id) {
 addEventListener("resize", () => requestAnimationFrame(wires), { passive:true });
 
 function quote(e, key) {
-  const side = e.doc_id === "before" ? "редакция «до»" : "редакция «после»";
-  const where = e.file ? `${e.file} · п. ${e.clause}` : `п. ${e.clause}`;
+  const doc = DATA.documents[e.doc_id] || {};
+  const side = doc.title || (e.doc_id === "before" ? "редакция «до»" : "редакция «после»");
+  // Имя файла уточняет ссылку только в комплекте из нескольких документов.
+  const many = (doc.files || []).length > 1;
+  const where = many && e.file ? `${e.file} · п. ${e.clause}` : `п. ${e.clause}`;
   return `<div class="q ${RCLS[e.role] || "af"}">
     <div class="qh"><span class="qref">${esc(side)} · ${esc(where)}</span>
       ${e.role ? `<span class="rol">${esc(ROLE[e.role] || e.role)}</span>` : ""}
@@ -873,7 +938,7 @@ function sources() {
     </div>`).join("") +
     `<div class="srccard lit"><h4>Как считалось</h4>
       <div class="sm">Фактическое время этапов прогона</div>
-      <div class="tim">${t.map(x => `<span>${esc(x.name)} — ${x.ms} мс</span>`).join("")}
+      <div class="tim">${t.map(x => `<span>${esc(x.name)} — ${x.ms < 1 ? "< 1" : x.ms} мс</span>`).join("")}
         <span>всего ${DATA.total_ms} мс</span></div></div>`;
 }
 
@@ -881,7 +946,8 @@ function sources() {
 function openSource(ev) {
   const doc = DATA.documents[ev.doc_id]; if (!doc) return;
   $("#p-t").textContent = doc.title;
-  $("#p-s").textContent = (ev.file ? ev.file + " · " : "") + "п. " + ev.clause;
+  $("#p-s").textContent = ((doc.files || []).length > 1 && ev.file ? ev.file + " · " : "")
+    + "п. " + ev.clause;
   const text = doc.text;
   let a = ev.span?.[0], b = ev.span?.[1];
   if (a == null || text.slice(a, b) !== ev.quote) { a = text.indexOf(ev.quote); b = a + ev.quote.length }

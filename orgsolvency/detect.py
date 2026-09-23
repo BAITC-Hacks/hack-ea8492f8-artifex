@@ -214,10 +214,11 @@ def orphan_obligations(clauses):
         holder, sim, _ = _best(ob, caps, SIM_COVER)
         if holder:
             continue
+        subject = " ".join(ob.text.split()[:7]).rstrip(",;:").rstrip(".")
         out.append(_f(
             f"O-{ob.number}", "orphan", "R-ORPH-01", "critical",
-            f"Обязательство п. {ob.number} действует, но ни одно подразделение "
-            f"не наделено полномочием его исполнить",
+            f"«{subject}…» — обязательство п. {ob.number} действует, но ни одно "
+            f"подразделение не наделено полномочием его исполнить",
             [_ev(ob, "requirement")],
             [f"обязательность: уровень {ob.modality}",
              f"ни одна функция с владельцем не покрывает предмет (порог {SIM_COVER})",

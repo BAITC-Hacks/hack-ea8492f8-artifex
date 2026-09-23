@@ -25,6 +25,15 @@
                "files": ["a.docx"], "clauses": 38, "numbered": 38, "collisions": 0},
     "after":  { "...": "то же" }
   },
+  "structure": {                         // must-have №1: подразделения до и после
+    "before": [{"id": "DKKM", "name": "...", "abbrev": "ДККМ", "side": "before",
+                "status": "preserved|transformed|created|abolished",
+                "positions": ["..."], "functions": 7, "clauses": ["5.5.3"]}],
+    "after":  [ /* то же */ ],
+    "links":  [{"from": "DKKM", "to": "DKKM", "status": "transformed",
+                "score": 1.0, "why": ["совпадает аббревиатура ДККМ", "общий функционал 0.55"]}]
+  },
+  "unit_counts": {"preserved": 1, "transformed": 1, "created": 2, "abolished": 1},
   "engine":  {"engine": "правила | правила + модель", "available": false, "model": null},
   "timings": [{"name": "Сопоставление функций", "ms": 69}],
   "total_ms": 69,
@@ -37,7 +46,7 @@
 | Поле | Обязательно | Назначение |
 |---|---|---|
 | `statement` | да | одно предложение, которое читает пользователь |
-| `type` | да | `orphan · lost · transferred · weakened · duplicated · collision · conflict_of_interest · broken_reference` |
+| `type` | да | `orphan · lost · transferred · weakened · duplicated · collision · conflict_of_interest · broken_reference · unit_created · unit_abolished · unit_transformed` |
 | `evidence[]` | **да, минимум одна** | вывод без источника интерфейс не показывает вовсе |
 | `rule_id` | желательно | показывается рядом с цепочкой вывода |
 | `trace[]` | желательно | нумерованная цепочка «как получен вывод» |
@@ -87,8 +96,6 @@
 
 ## Чего в контракте ещё нет
 
-`must-have №1` — перечень реорганизованных, сохранённых и созданных
-подразделений. Заготовка типов есть в `schemas/finding.schema.json`
-(`unit_created`, `unit_abolished`, `unit_transformed`), разметка — в
-`golden/golden.json`, но детектора нет и отдельной вкладки в интерфейсе тоже.
-Это ближайшая незакрытая часть задания.
+Все пять must-have закрыты. Незакрытым остаётся слой модели: разъём готов
+(`orgsolvency/ai.py`), провайдер подключается переменными окружения, и
+двенадцать пропусков из `BENCHMARK.md` ждут именно его.

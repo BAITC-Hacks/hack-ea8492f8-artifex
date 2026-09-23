@@ -194,10 +194,15 @@ def compare(before_clauses, after_clauses) -> dict:
         if best:
             taken.add(best)
             kept = fsim
-            status = "preserved" if kept >= TRANSFORM_DROP or not b["functions"] \
-                else "transformed"
-            if len(b["positions"]) and len(A[best]["positions"]) and psim < 0.5:
-                status = "transformed"
+            # Преобразованием считается утрата функционала либо изменение
+            # штатного состава. Переименование должности при том же их числе
+            # преобразованием не является: «Директор проектов ДНМ» и
+            # «Директор проектов» — одна и та же позиция.
+            nb, na = len(b["positions"]), len(A[best]["positions"])
+            staff_changed = bool(nb and na) and abs(na - nb) / max(nb, na) > 0.25
+            status = "transformed" if (
+                (b["functions"] and kept < TRANSFORM_DROP) or staff_changed
+            ) else "preserved"
             pairs[bid] = {"to": best, "score": round(score, 2), "why": why,
                           "status": status, "kept": round(kept, 2)}
 
@@ -239,7 +244,8 @@ def compare(before_clauses, after_clauses) -> dict:
         findings.append(_uf(
             f"U-TR-{bid}", "unit_transformed", "R-UNIT-03", "medium",
             f"Подразделение «{b['name']}» преобразовано: сохранено "
-            f"{p['kept']:.0%} функционала, состав должностей изменён",
+            f"{p['kept']:.0%} функционала, должностей "
+            f"{len(b['positions'])} → {len(a['positions'])}",
             b, a, [f"сопоставление: {', '.join(p['why'])}",
                    f"должностей было {len(b['positions'])}, стало {len(a['positions'])}",
                    f"функций было {len(b['functions'])}, стало {len(a['functions'])}"]))

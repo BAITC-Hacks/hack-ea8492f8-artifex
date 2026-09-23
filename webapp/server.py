@@ -63,11 +63,18 @@ def to_text(name: str, blob: bytes) -> str:
 
 def build(side_files, doc_id, title):
     """Комплект файлов одной стороны → один документ с общей нумерацией."""
-    chunks = [f"# doc_id: {doc_id}"]
+    chunks, titles = [f"# doc_id: {doc_id}"], []
     for name, blob in side_files:
+        body = to_text(name, blob)
+        for line in body.splitlines()[:6]:
+            if line.startswith("# title:"):
+                titles.append(line.split(":", 1)[1].strip())
+                break
         chunks.append(f"# файл: {name}")
-        chunks.append(to_text(name, blob))
+        chunks.append(body)
     text = "\n".join(chunks)
+    if len(titles) == 1:
+        title = titles[0]
     clauses = parse_text(text, doc_id)
     numbered = sum(1 for line in text.splitlines() if CLAUSE_RE.match(line))
     seen, collisions = set(), 0
