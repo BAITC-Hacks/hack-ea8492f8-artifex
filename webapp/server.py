@@ -10,6 +10,7 @@ import argparse
 import json
 import tempfile
 import time
+import zipfile
 import sys
 import webbrowser
 from email.parser import BytesParser
@@ -32,8 +33,14 @@ from orgsolvency.ai import status as ai_status               # noqa: E402
 PAGE = ROOT / "webapp" / "index.html"
 
 
+class UserError(Exception):
+    """Ошибка, которую показывают пользователю дословно."""
+
+
 def to_text(name: str, blob: bytes) -> str:
     """Файл → нормализованный текст. .docx читается без зависимостей."""
+    if not blob:
+        raise UserError(f"Файл «{name}» пуст.")
     if name.lower().endswith(".docx"):
         # Сервер многопоточный: общий временный файл ломал бы параллельные загрузки.
         with tempfile.NamedTemporaryFile(suffix=".docx", delete=False) as fh:
@@ -41,6 +48,12 @@ def to_text(name: str, blob: bytes) -> str:
             path = fh.name
         try:
             text, _ = read_docx(path)
+        except zipfile.BadZipFile:
+            raise UserError(
+                f"Файл «{name}» не читается как .docx. Возможно, это .doc старого "
+                f"формата или файл повреждён — пересохраните его в Word как .docx.")
+        except KeyError:
+            raise UserError(f"В файле «{name}» нет основного документа word/document.xml.")
         finally:
             Path(path).unlink(missing_ok=True)
         return text
@@ -94,9 +107,22 @@ def analyze(before_files, after_files):
         lambda: check(findings, {"before": bdoc["text"], "after": adoc["text"]}))
     findings = enrich(findings)
     titles = {"before": bdoc["title"], "after": adoc["title"]}
+    identical = bdoc["text"].split("\n", 1)[-1] == adoc["text"].split("\n", 1)[-1]
     summary = phase("Сборка заключения",
                     lambda: summarize(findings, before, after, titles))
     summary["by_consequence"] = by_consequence(findings)
+    if identical:
+        summary["headline"] = ("Комплекты «до» и «после» совпадают — "
+                               "изменений нет")
+        summary["narrative"] = (
+            ["Загружены одинаковые документы. Показанные отклонения найдены "
+             "внутри одного документа: осиротевшие обязательства, коллизии "
+             "с запретами и конфликты интересов существуют в нём независимо "
+             "от реорганизации."]
+            if findings else
+            ["Загружены одинаковые документы, отклонений внутри документа "
+             "не обнаружено."])
+        summary["identical"] = True
 
     return {
         "summary": summary,
@@ -146,15 +172,25 @@ class Handler(BaseHTTPRequestHandler):
             try:
                 return self.send_json(demo())
             except Exception as exc:                          # noqa: BLE001
-                return self.send_json({"error": str(exc)}, 500)
+                print(f"  [ошибка demo] {type(exc).__name__}: {exc}")
+                return self.send_json(
+                    {"error": "Контрольный комплект не читается: "
+                              "проверьте каталог corpus/."}, 500)
         return self.send_json({"error": "Неизвестный адрес"}, 404)
 
     def do_POST(self):
         if urlparse(self.path).path != "/api/analyze":
             return self.send_json({"error": "Неизвестный адрес"}, 404)
         try:
+            ctype = self.headers.get("Content-Type")
+            if not ctype or "multipart/form-data" not in ctype:
+                return self.send_json(
+                    {"error": "Запрос должен быть multipart/form-data "
+                              "с полями before и after."}, 400)
             length = int(self.headers.get("Content-Length", 0))
-            raw = (b"Content-Type: " + self.headers["Content-Type"].encode()
+            if length <= 0:
+                return self.send_json({"error": "Пустой запрос: файлы не переданы."}, 400)
+            raw = (b"Content-Type: " + ctype.encode()
                    + b"\r\nMIME-Version: 1.0\r\n\r\n" + self.rfile.read(length))
             msg = BytesParser(policy=default).parsebytes(raw)
 
@@ -170,8 +206,14 @@ class Handler(BaseHTTPRequestHandler):
                 return self.send_json(
                     {"error": "Нужен хотя бы один файл в каждом комплекте."}, 400)
             return self.send_json(analyze(sides["before"], sides["after"]))
+        except (UserError, ValueError) as exc:
+            return self.send_json({"error": str(exc)}, 400)
         except Exception as exc:                              # noqa: BLE001
-            return self.send_json({"error": str(exc)}, 500)
+            # Внутреннюю трассировку пользователю не показываем.
+            print(f"  [ошибка] {type(exc).__name__}: {exc}")
+            return self.send_json(
+                {"error": "Не удалось разобрать документы. Проверьте, что это "
+                          ".docx или текст с нумерацией пунктов."}, 500)
 
 
 def main():

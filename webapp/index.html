@@ -534,6 +534,68 @@ $("#copyall").onclick = () => {
   setTimeout(() => $("#copyall").textContent = "Копировать заключение", 1500);
 };
 
+/* ── защита контракта ───────────────────────────────────────────────────────
+   Движок разрабатывается параллельно. Интерфейс не должен падать, если ответ
+   придёт без новых полей: недостающее достраивается здесь, а не ломает экран. */
+const CONSEQ = { orphan:["not_done","Функция не исполняется"], lost:["not_done","Функция не исполняется"],
+  duplicated:["blurred","Ответственность размыта"], conflict_of_interest:["blurred","Ответственность размыта"],
+  weakened:["softened","Требование ослаблено"], collision:["contradiction","Документ противоречит себе"],
+  broken_reference:["contradiction","Документ противоречит себе"], transferred:["tracked","Изменение прослежено"] };
+const HINT = { not_done:"Обязанность есть, исполнителя нет.",
+  blurred:"За одно и то же отвечают двое либо проверяющий проверяет сам себя.",
+  contradiction:"Документ разрешает то, что сам же запрещает, либо ссылается не туда.",
+  softened:"Норма уцелела как текст и ослабла как обязательство.",
+  tracked:"Функция не потеряна — у неё сменился владелец." };
+const ABSENCE = new Set(["orphan","lost"]);
+const ORDER = ["not_done","blurred","contradiction","softened","tracked"];
+
+function normalize(d) {
+  d.findings = (d.findings || []).map(f => {
+    f.evidence = (f.evidence || []).filter(e => e && e.quote != null && e.clause != null);
+    f.trace = f.trace || [];
+    f.statement = f.statement || "(вывод без формулировки)";
+    f.rule_id = f.rule_id || "—";
+    if (!f.consequence) {
+      const [k, label] = CONSEQ[f.type] || ["tracked","Прочее"];
+      f.consequence = k; f.consequence_label = label;
+    }
+    if (!f.certainty) {
+      f.certainty = f.engine === "модель"
+        ? { key:"model", label:"Решено моделью", why:"Совпадение установлено моделью — проверьте цитаты." }
+        : ABSENCE.has(f.type)
+          ? { key:"check", label:"Требует проверки", why:"Вывод об отсутствии: подтверждается ненахождением, а не цитатой." }
+          : { key:"proven", label:"Подтверждено документом", why:"Обе стороны вывода процитированы дословно." };
+    }
+    return f;
+  }).filter(f => f.evidence.length);   // вывод без источника не показывается
+
+  d.summary = d.summary || {};
+  const s = d.summary;
+  s.headline = s.headline || `Выявлено отклонений: ${d.findings.length}`;
+  s.narrative = Array.isArray(s.narrative) ? s.narrative : [];
+  s.kpi = Array.isArray(s.kpi) && s.kpi.length ? s.kpi : [
+    { value:d.findings.length, label:"отклонений", tone:"default" },
+    { value:d.findings.filter(f => f.certainty.key === "proven").length,
+      label:"подтверждено документом", tone:"ok" }];
+  if (!Array.isArray(s.by_consequence) || !s.by_consequence.length) {
+    s.by_consequence = ORDER.map(k => {
+      const g = d.findings.filter(f => f.consequence === k);
+      return g.length ? { key:k, label:g[0].consequence_label, hint:HINT[k] || "",
+        count:g.length, proven:g.filter(f => f.certainty.key === "proven").length } : null;
+    }).filter(Boolean);
+  }
+  d.documents = d.documents || {};
+  for (const [id, doc] of Object.entries(d.documents)) {
+    doc.title = doc.title || (id === "before" ? "Редакция «до»" : "Редакция «после»");
+    doc.files = Array.isArray(doc.files) ? doc.files : [];
+    doc.text = typeof doc.text === "string" ? doc.text : "";
+    doc.clauses = doc.clauses ?? 0; doc.numbered = doc.numbered ?? 0;
+  }
+  d.engine = d.engine || { engine:"правила", available:false };
+  d.timings = Array.isArray(d.timings) ? d.timings : [];
+  return d;
+}
+
 /* ── отрисовка ── */
 let DATA = null, QUERY = "", CUR = -1;
 function countUp(el, to) {
@@ -542,14 +604,18 @@ function countUp(el, to) {
     if (n >= to) { el.textContent = to; return } el.textContent = n; requestAnimationFrame(step) };
   step();
 }
-function draw(d) {
+function draw(raw) {
+  const d = normalize(raw);
   DATA = d;
   const s = d.summary;
   const lead = s.by_consequence?.[0];
   countUp($("#fig"), lead ? lead.count : d.findings.length);
   $("#figl").textContent = lead ? lead.label.toLowerCase() : "отклонений";
+  $("#fig").style.color = s.identical ? "var(--fg3)" : "var(--c1)";
   $("#claim").textContent = s.headline;
   $("#why").innerHTML = s.narrative.slice(0, 3).map(t => `<li>${esc(t)}</li>`).join("");
+  if (!d.findings.length) $("#why").innerHTML =
+    `<li>Отклонений не выявлено. Проверьте, что загружены разные редакции.</li>`;
   $("#strip").innerHTML = s.kpi.map(k =>
     `<div class="${k.tone === "ok" ? "good" : ""}"><b>${esc(k.value)}</b><span>${esc(k.label)}</span></div>`).join("");
 
