@@ -68,6 +68,12 @@ header{display:flex; align-items:center; gap:12px; padding:20px 0 26px}
 }
 .ghost:hover{border-color:var(--border-strong);color:var(--text);transform:translateY(-1px)}
 .ghost svg{width:15px;height:15px}
+.pill{display:inline-flex;align-items:center;gap:7px;border:1px solid var(--border);
+  background:var(--surface);border-radius:999px;padding:5px 11px 5px 9px;font-size:12.5px;color:var(--text-2)}
+.pill i{width:7px;height:7px;border-radius:50%;background:var(--muted);flex:none}
+.pill.live i{background:var(--ok);box-shadow:0 0 0 3px color-mix(in oklab,var(--ok) 22%,transparent)}
+.pill b{font-weight:600;color:var(--text)}
+@media(max-width:640px){.pill span.opt{display:none}}
 
 /* ---------- загрузка ---------- */
 .intro{text-align:center;max-width:560px;margin:14px auto 30px}
@@ -136,7 +142,14 @@ html[data-theme="dark"] .verdict{
 .filter[aria-pressed="true"]{background:var(--text);color:var(--bg);border-color:var(--text)}
 .filter b{font-variant-numeric:tabular-nums;opacity:.7;font-weight:600}
 h3.sec{font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);
-  margin:26px 0 12px;font-weight:650}
+  margin:26px 0 12px;font-weight:650;display:flex;align-items:center;gap:10px}
+h3.sec .n{font-weight:600;color:var(--text-2);font-variant-numeric:tabular-nums}
+h3.sec::after{content:"";flex:1;height:1px;background:var(--border)}
+.group{margin:0 0 4px}
+.group > .gh{display:flex;align-items:center;gap:9px;margin:20px 0 9px;font-size:12px;
+  letter-spacing:.07em;text-transform:uppercase;font-weight:650;color:var(--muted)}
+.group > .gh .dot{width:8px;height:8px;border-radius:50%}
+.group > .gh .n{margin-left:auto;font-variant-numeric:tabular-nums;color:var(--text-2)}
 
 /* ---------- находки ---------- */
 .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);
@@ -156,7 +169,10 @@ h3.sec{font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--
 .head{display:block;min-width:0}
 .head .kind{display:block;font-size:12px;color:var(--muted);letter-spacing:.02em;margin-bottom:4px}
 .head .stm{display:block;font-size:15px;line-height:1.5;letter-spacing:-.005em}
-.head .refs{margin-top:9px;display:flex;gap:6px;flex-wrap:wrap}
+.head .refs{margin-top:9px;display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.by{font-size:11px;color:var(--accent);background:var(--accent-soft);
+  border:1px solid color-mix(in oklab,var(--accent) 24%,transparent);
+  border-radius:6px;padding:3px 7px;font-weight:600}
 .pin{font:12px/1 ui-monospace,SFMono-Regular,Menlo,monospace;color:var(--text-2);
   background:var(--surface-2);border:1px solid var(--border);border-radius:6px;padding:4px 7px}
 .caret{color:var(--muted);transition:.2s;margin-top:4px}
@@ -220,6 +236,9 @@ h3.sec{font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--
     <span>Artifex<small>анализ организационных изменений</small></span>
   </div>
   <span class="spacer"></span>
+  <span class="pill" id="engine" title="Слой модели включается переменными окружения ARTIFEX_AI и ARTIFEX_AI_KEY">
+    <i></i><span class="opt">движок:</span> <b>правила</b></span>
+  <button class="ghost hide" id="export">Экспорт</button>
   <button class="ghost hide" id="again">Новый анализ</button>
   <button class="ghost" id="theme" aria-label="Сменить тему">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4.2"/><path d="M12 2.4v2M12 19.6v2M2.4 12h2M19.6 12h2M5.2 5.2l1.4 1.4M17.4 17.4l1.4 1.4M18.8 5.2l-1.4 1.4M6.6 17.4l-1.4 1.4" stroke-linecap="round"/></svg>
@@ -308,6 +327,10 @@ const ROLE = {
   reference_target:"адресат ссылки"
 };
 const SEV_ORDER = ["critical","high","medium","low","info"];
+const SEV_RU = {critical:"Критические", high:"Высокие", medium:"Средние",
+                low:"Низкие", info:"Справочные"};
+const SEV_COLOR = {critical:"var(--critical)", high:"var(--high)", medium:"var(--medium)",
+                   low:"var(--low)", info:"var(--info)"};
 const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 
 /* тема */
@@ -365,7 +388,18 @@ $("#go").onclick = () => {
   picked.after.forEach(f => fd.append("after", f));
   call("/api/analyze", { method:"POST", body:fd });
 };
-$("#again").onclick = () => { show("upload"); $("#again").classList.add("hide"); $("#upErr").innerHTML="" };
+$("#again").onclick = () => {
+  show("upload");
+  $("#again").classList.add("hide"); $("#export").classList.add("hide");
+  $("#upErr").innerHTML = "";
+};
+$("#export").onclick = () => {
+  const blob = new Blob([JSON.stringify(STATE, null, 2)], { type:"application/json" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "заключение.json";
+  a.click(); URL.revokeObjectURL(a.href);
+};
 
 /* отрисовка */
 let STATE = null, FILTER = null;
@@ -386,15 +420,20 @@ function render(data){
     [...$("#filters").children].forEach(x => x.setAttribute("aria-pressed", x === b));
     list();
   };
+  const eng = data.engine || {};
+  const badge = $("#engine");
+  badge.classList.toggle("live", !!eng.available);
+  badge.innerHTML = `<i></i><span class="opt">движок:</span> <b>${esc(eng.engine || "правила")}</b>` +
+    (eng.model ? ` <span class="opt" style="opacity:.7">${esc(eng.model)}</span>` : "");
+
   FILTER = null; list();
   $("#again").classList.remove("hide");
+  $("#export").classList.remove("hide");
   show("result");
   window.scrollTo({ top:0, behavior:"smooth" });
 }
 
-function list(){
-  const items = STATE.findings.filter(f => !FILTER || f.type === FILTER);
-  $("#findings").innerHTML = items.map((f, i) => {
+function card(f, i){
     const pins = f.evidence.map(e =>
       `<span class="pin">${esc(e.doc_id === "before" ? "до" : "после")} · п. ${esc(e.clause)}</span>`).join("");
     const trace = (f.trace || []).map(t => `<li>${esc(t)}</li>`).join("");
@@ -413,7 +452,7 @@ function list(){
         <span class="head">
           <span class="kind">${esc(RU[f.type] || f.type)} · ${esc(f.rule_id)}</span>
           <span class="stm">${esc(f.statement)}</span>
-          <span class="refs">${pins}</span>
+          <span class="refs">${pins}${f.engine === "модель" ? '<span class="by">решено моделью</span>' : ""}</span>
         </span>
         <svg class="caret" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6" stroke-linecap="round" stroke-linejoin="round"/></svg>
       </summary>
@@ -424,7 +463,19 @@ function list(){
         <div class="evs">${evs}</div>
       </div>
     </details>`;
-  }).join("") || `<p class="hint">В этой категории отклонений нет.</p>`;
+}
+
+function list(){
+  const items = STATE.findings.filter(f => !FILTER || f.type === FILTER);
+  const groups = SEV_ORDER
+    .map(sev => [sev, items.map((f, i) => [f, i]).filter(([f]) => f.severity === sev)])
+    .filter(([, g]) => g.length);
+  $("#findings").innerHTML = groups.map(([sev, g]) => `
+    <section class="group">
+      <div class="gh"><span class="dot" style="background:${SEV_COLOR[sev]}"></span>
+        ${SEV_RU[sev]}<span class="n">${g.length}</span></div>
+      ${g.map(([f, i]) => card(f, i)).join("")}
+    </section>`).join("") || `<p class="hint">В этой категории отклонений нет.</p>`;
 
   $("#findings").querySelectorAll(".ev").forEach(el => {
     const open = () => source(STATE.findings.filter(f => !FILTER || f.type === FILTER)[+el.dataset.f].evidence[+el.dataset.e]);

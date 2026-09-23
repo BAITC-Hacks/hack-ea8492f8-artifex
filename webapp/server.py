@@ -24,6 +24,7 @@ from orgsolvency.ingest import read_docx, CLAUSE_RE          # noqa: E402
 from orgsolvency.detect import run as detect                 # noqa: E402
 from orgsolvency.verify import check                         # noqa: E402
 from orgsolvency.summary import summarize                    # noqa: E402
+from orgsolvency.ai import status as ai_status               # noqa: E402
 
 PAGE = ROOT / "webapp" / "index.html"
 
@@ -73,6 +74,7 @@ def analyze(before_files, after_files):
         "findings": findings,
         "documents": {"before": bdoc, "after": adoc},
         "rejected": len(rejected),
+        "engine": ai_status(),
     }
 
 
@@ -107,6 +109,8 @@ class Handler(BaseHTTPRequestHandler):
             self.end_headers()
             self.wfile.write(body)
             return
+        if path == "/api/health":
+            return self.send_json({"status": "ok", **ai_status()})
         if path == "/api/demo":
             try:
                 return self.send_json(demo())

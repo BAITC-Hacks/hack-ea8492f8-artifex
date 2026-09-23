@@ -6,11 +6,14 @@
 """
 import re
 from .core import overlap, tokens, stem
+from .ai import adjudicate, BAND
 
 SIM_SAME = 0.45      # порог «та же норма, другая формулировка»
 SIM_DUP = 0.50       # порог дублирования внутри одного документа
 COVER_COLLIDE = 0.34  # доля предмета запрета, покрытая формулировкой функции
 SIM_COVER = 0.20     # порог «эта функция покрывает это обязательство»
+
+PROVIDER_ON = False  # заполняется в run(): включён ли слой модели
 
 
 def _ev(c, role):
@@ -18,19 +21,35 @@ def _ev(c, role):
             "span": list(c.span), "role": role}
 
 
-def _f(fid, ftype, rule, sev, statement, evidence, trace, conf=1.0):
+def _f(fid, ftype, rule, sev, statement, evidence, trace, conf=1.0, engine="правила"):
     return {"finding_id": fid, "type": ftype, "rule_id": rule, "severity": sev,
             "statement": statement, "evidence": evidence, "trace": trace,
-            "confidence": conf}
+            "confidence": conf, "engine": engine}
 
 
 def _best(clause, pool, minimum=0.0):
+    """Лучший кандидат. В полосе неопределённости спрашиваем модель.
+
+    Возвращает (кандидат, оценка, чем решено). Третье значение попадает в
+    цепочку получения вывода, поэтому в отчёте всегда видно, где сработала
+    лексика, а где — модель.
+    """
     best, score = None, minimum
+    edge, edge_score = None, 0.0
     for cand in pool:
         s = overlap(clause.tokens, cand.tokens)
         if s > score:
             best, score = cand, s
-    return best, score
+        if BAND[0] <= s < BAND[1] and s > edge_score:
+            edge, edge_score = cand, s
+    if best is not None:
+        return best, score, "лексика"
+    if edge is not None:
+        verdict = adjudicate(clause.text, edge.text, edge_score)
+        if verdict and verdict.get("same"):
+            return (edge, max(edge_score, verdict.get("confidence", 0.5)),
+                    "модель: " + (verdict.get("why") or "формулировки различны, функция одна"))
+    return None, score, "лексика"
 
 
 def broken_references(before, after):
@@ -44,7 +63,7 @@ def broken_references(before, after):
             if not tgt_after or not tgt_before:
                 continue
             # ссылающийся пункт не изменился по смыслу?
-            twin, sim_src = _best(src, before, 0.0)
+            twin, sim_src, _ = _best(src, before, 0.0)
             if not twin or sim_src < SIM_SAME:
                 continue
             if ref not in twin.refs():
@@ -53,7 +72,7 @@ def broken_references(before, after):
             if drift >= SIM_SAME:
                 continue
             # куда уехал первоначальный адресат
-            moved, sim_moved = _best(tgt_before, after, 0.6)
+            moved, sim_moved, _ = _best(tgt_before, after, 0.6)
             ev = [_ev(src, "reference_source"), _ev(tgt_after, "reference_target"),
                   _ev(twin, "before")]
             if moved:
@@ -76,7 +95,7 @@ def modality_downgrades(before, after):
     """Норма выжила текстом и ослабла как обязательство."""
     out = []
     for b in before:
-        a, sim = _best(b, after, SIM_SAME)
+        a, sim, via = _best(b, after, SIM_SAME)
         if not a or a.modality >= b.modality or b.modality == 0 or a.modality == 0:
             continue
         out.append(_f(
@@ -85,9 +104,9 @@ def modality_downgrades(before, after):
             f"Норма п. {b.number} ослаблена: уровень обязательности снижен "
             f"с {b.modality} до {a.modality} (п. {a.number} новой редакции)",
             [_ev(b, "before"), _ev(a, "after")],
-            [f"сопоставление по тексту: сходство {sim:.2f}",
+            [f"сопоставление по тексту: сходство {sim:.2f} ({via})",
              f"модальность {b.modality} → {a.modality} по решётке обязан>должен>осуществляется>может"],
-            round(sim, 2)))
+            round(sim, 2), "модель" if via.startswith("модель") else "правила"))
     return out
 
 
@@ -95,7 +114,7 @@ def capability_changes(before, after):
     """Функция исчезла у владельца: утрачена либо передана другому."""
     out = []
     for b in [c for c in before if c.kind == "capability"]:
-        a, sim = _best(b, [c for c in after if c.kind == "capability"], SIM_SAME)
+        a, sim, via = _best(b, [c for c in after if c.kind == "capability"], SIM_SAME)
         if a is None:
             out.append(_f(
                 f"L-{b.number}", "lost", "R-LOST-01", "high",
@@ -103,15 +122,19 @@ def capability_changes(before, after):
                 f"подразделением в новой редакции",
                 [_ev(b, "before")],
                 [f"владелец в ред. «до»: {b.owner}",
-                 f"в ред. «после» нет функции со сходством ≥ {SIM_SAME}"],
+                 f"в ред. «после» нет функции со сходством ≥ {SIM_SAME}",
+                 "полоса неопределённости проверена моделью: совпадений нет"
+                 if PROVIDER_ON else
+                 "полоса неопределённости не проверялась: слой модели отключён"],
                 0.8))
         elif a.owner != b.owner:
             out.append(_f(
                 f"T-{b.number}", "transferred", "R-TRANS-01", "info",
                 f"Функция передана: {b.owner} (п. {b.number}) → {a.owner} (п. {a.number})",
                 [_ev(b, "before"), _ev(a, "after")],
-                [f"сходство формулировок {sim:.2f}", "владелец изменился → не потеря"],
-                round(sim, 2)))
+                [f"сходство формулировок {sim:.2f} ({via})",
+                 "владелец изменился → не потеря"],
+                round(sim, 2), "модель" if via.startswith("модель") else "правила"))
     return out
 
 
@@ -184,7 +207,7 @@ def orphan_obligations(clauses):
     for ob in [c for c in clauses if c.kind == "obligation" and c.modality >= 3]:
         if ob.chapter in ("2", "3"):
             continue
-        holder, sim = _best(ob, caps, SIM_COVER)
+        holder, sim, _ = _best(ob, caps, SIM_COVER)
         if holder:
             continue
         out.append(_f(
@@ -221,6 +244,9 @@ def self_assessment(clauses):
 
 
 def run(before, after):
+    global PROVIDER_ON
+    from .ai import provider
+    PROVIDER_ON = provider().available
     before = [c for c in before if not c.is_header]
     after = [c for c in after if not c.is_header]
     findings = []
