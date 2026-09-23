@@ -26,6 +26,7 @@ from orgsolvency.core import parse_text                      # noqa: E402
 from orgsolvency.ingest import read_docx, CLAUSE_RE          # noqa: E402
 from orgsolvency.detect import run as detect                 # noqa: E402
 from orgsolvency.verify import check                         # noqa: E402
+from orgsolvency.units import compare as compare_units       # noqa: E402
 from orgsolvency.summary import (summarize, enrich,          # noqa: E402
                                  by_consequence)
 from orgsolvency.ai import status as ai_status               # noqa: E402
@@ -101,7 +102,10 @@ def analyze(before_files, after_files):
         raise ValueError("Не удалось выделить ни одного пронумерованного пункта. "
                          "Проверьте, что в документах есть нумерация вида «5.6.3.».")
 
+    units = phase("Сопоставление подразделений",
+                  lambda: compare_units(before, after))
     findings = phase("Сопоставление функций", lambda: detect(before, after))
+    findings = units["findings"] + findings
     findings, rejected = phase(
         "Контроль дословности цитат",
         lambda: check(findings, {"before": bdoc["text"], "after": adoc["text"]}))
@@ -129,6 +133,8 @@ def analyze(before_files, after_files):
         "findings": findings,
         "documents": {"before": bdoc, "after": adoc},
         "rejected": len(rejected),
+        "structure": units["structure"],
+        "unit_counts": units["counts"],
         "engine": ai_status(),
         "timings": timings,
         "total_ms": sum(t["ms"] for t in timings),

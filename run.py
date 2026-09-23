@@ -10,6 +10,7 @@
 import sys, os
 from orgsolvency.core import load
 from orgsolvency.detect import run as detect
+from orgsolvency.units import compare as compare_units
 from orgsolvency.verify import check
 from orgsolvency.report import render, dump_json
 from orgsolvency.score import score, report as score_report
@@ -23,7 +24,8 @@ def main(argv):
     after, after_text, rep_a = load(after_path)
     sources = {before[0].doc_id: before_text, after[0].doc_id: after_text}
 
-    findings = detect(before, after)
+    units = compare_units(before, after)
+    findings = units["findings"] + detect(before, after)
     findings, rejected = check(findings, sources)
 
     os.makedirs("out", exist_ok=True)
@@ -31,6 +33,9 @@ def main(argv):
     render(findings, before, after, "out/report.html")
 
     print(f"\n  пунктов разобрано: {len(before)} «до» / {len(after)} «после»")
+    c = units["counts"]
+    print(f"  подразделения: сохранено {c['preserved']}, преобразовано "
+          f"{c['transformed']}, создано {c['created']}, упразднено {c['abolished']}")
     for name, rep in (("до", rep_b), ("после", rep_a)):
         if rep["autonumbered_unreliable"]:
             print(f"  «{name}»: {rep['autonumbered_unreliable']} абзацев без "

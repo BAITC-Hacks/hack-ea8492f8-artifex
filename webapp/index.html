@@ -260,6 +260,39 @@ body{margin:0;background:var(--bg);color:var(--fg);
 .tim span{font-family:var(--mono);font-size:11.5px;color:var(--fg3);background:var(--sunk);
   border-radius:5px;padding:3px 7px}
 
+/* ── структура: две колонки и связи между ними ── */
+.legend{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 16px;font-size:12.5px;color:var(--fg3)}
+.legend i{display:inline-block;width:9px;height:9px;border-radius:3px;margin-right:6px;vertical-align:-1px}
+.ustat{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;margin:0 0 18px}
+@media(max-width:700px){.ustat{grid-template-columns:repeat(2,1fr)}}
+.ustat div{border:1px solid var(--line);background:var(--panel);border-radius:11px;padding:12px 14px}
+.ustat b{display:block;font-size:24px;line-height:1.1;letter-spacing:-.03em;font-variant-numeric:tabular-nums}
+.ustat span{font-size:11.5px;color:var(--fg3)}
+.stage{position:relative}
+.stage svg.wires{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:0;overflow:visible}
+.stage .cols{position:relative;z-index:1;display:grid;grid-template-columns:1fr 1fr;gap:70px}
+@media(max-width:820px){.stage .cols{grid-template-columns:1fr;gap:22px}.stage svg.wires{display:none}}
+.colhead{font-size:11.5px;letter-spacing:.11em;text-transform:uppercase;color:var(--fg3);
+  font-weight:650;margin:0 0 10px}
+.unit{border:1px solid var(--line);background:var(--panel);border-radius:11px;padding:12px 14px;
+  margin-bottom:9px;cursor:pointer;transition:border-color .16s,transform .16s,opacity .2s;
+  position:relative;animation:rise .4s both}
+.unit:hover{transform:translateY(-2px)}
+.unit.dim{opacity:.32}
+.unit .st{position:absolute;top:0;left:0;bottom:0;width:3px;border-radius:11px 0 0 11px}
+.unit h5{margin:0 0 3px;font-size:14px;font-weight:600;letter-spacing:-.01em;line-height:1.35;padding-left:6px}
+.unit .ab{font-family:var(--mono);font-size:11px;color:var(--fg3);padding-left:6px}
+.unit .nums{display:flex;gap:13px;margin-top:9px;padding-left:6px;font-size:11.5px;color:var(--fg3)}
+.unit .nums b{color:var(--fg2);font-variant-numeric:tabular-nums;font-weight:600}
+.unit .tagst{display:inline-block;margin-left:6px;font-size:10px;font-weight:700;letter-spacing:.06em;
+  text-transform:uppercase;padding:2px 6px;border-radius:5px;vertical-align:1px}
+.unit .pos{margin-top:9px;padding-left:6px;display:flex;flex-wrap:wrap;gap:4px}
+.unit .pos span{font-size:11px;color:var(--fg3);background:var(--sunk);border-radius:5px;padding:2px 6px}
+.wires path{fill:none;stroke-linecap:round;transition:opacity .2s,stroke-width .2s}
+.wires .stub{stroke-dasharray:3 5}
+.wires circle{transition:opacity .2s}
+.wires .fade{opacity:.13}
+
 /* ── панель источника ── */
 .veil{position:fixed;inset:0;background:rgba(5,6,10,.55);backdrop-filter:blur(3px);
   opacity:0;pointer-events:none;transition:opacity .2s;z-index:40}
@@ -359,6 +392,7 @@ body{margin:0;background:var(--bg);color:var(--fg);
 
   <div class="tabs" role="tablist">
     <button class="tab" role="tab" data-v="f" aria-selected="true">Отклонения<b id="cnt-f"></b></button>
+    <button class="tab" role="tab" data-v="u" aria-selected="false">Структура<b id="cnt-u"></b></button>
     <button class="tab" role="tab" data-v="s" aria-selected="false">Источники<b id="cnt-s"></b></button>
   </div>
 
@@ -372,6 +406,22 @@ body{margin:0;background:var(--bg);color:var(--fg);
       <button class="btn" id="expand">Развернуть все</button>
     </div>
     <div id="rows"></div>
+  </div>
+  <div id="v-u" class="hide">
+    <div class="ustat" id="ustat"></div>
+    <div class="legend">
+      <span><i style="background:var(--ok)"></i>сохранено</span>
+      <span><i style="background:var(--c3)"></i>преобразовано</span>
+      <span><i style="background:var(--brand)"></i>создано</span>
+      <span><i style="background:var(--c1)"></i>упразднено</span>
+    </div>
+    <div class="stage" id="stage">
+      <svg class="wires" id="wires"></svg>
+      <div class="cols">
+        <div><div class="colhead">До реорганизации</div><div id="col-b"></div></div>
+        <div><div class="colhead">После реорганизации</div><div id="col-a"></div></div>
+      </div>
+    </div>
   </div>
   <div id="v-s" class="hide"><div class="srcgrid" id="srcs"></div></div>
 
@@ -627,16 +677,100 @@ function draw(raw) {
   $("#cnt-f").textContent = d.findings.length;
   $("#cnt-s").textContent = Object.keys(d.documents).length;
   QUERY = ""; $("#q").value = ""; CUR = -1;
-  rows(); sources();
+  rows(); sources(); structure();
   ["#again","#export","#copyall"].forEach(x => $(x).classList.remove("hide"));
   screen("s-result"); scrollTo({ top:0, behavior:slow ? "auto" : "smooth" });
 }
 
 $$(".tab").forEach(t => t.onclick = () => {
   $$(".tab").forEach(x => x.setAttribute("aria-selected", x === t));
-  $("#v-f").classList.toggle("hide", t.dataset.v !== "f");
-  $("#v-s").classList.toggle("hide", t.dataset.v !== "s");
+  ["f","u","s"].forEach(v => $("#v-" + v).classList.toggle("hide", t.dataset.v !== v));
+  if (t.dataset.v === "u") requestAnimationFrame(wires);
 });
+
+/* ── структура: два состояния организации и переходы между ними ── */
+const UST = {
+  preserved:  ["сохранено",     "var(--ok)",    "var(--oks)"],
+  transformed:["преобразовано", "var(--c3)",    "var(--c3s)"],
+  created:    ["создано",       "var(--brand)", "var(--bsoft)"],
+  abolished:  ["упразднено",    "var(--c1)",    "var(--c1s)"]
+};
+function unitCard(n, i) {
+  const [label, col, soft] = UST[n.status] || UST.preserved;
+  const pos = (n.positions || []).slice(0, 4);
+  return `<div class="unit lit" data-u="${esc(n.id)}" data-side="${n.side}"
+            style="animation-delay:${Math.min(i * 55, 400)}ms">
+    <span class="st" style="background:${col}"></span>
+    <h5>${esc(n.name)}<span class="tagst" style="color:${col};background:${soft}">${label}</span></h5>
+    ${n.abbrev ? `<div class="ab">${esc(n.abbrev)}</div>` : ""}
+    <div class="nums"><span>функций <b>${n.functions}</b></span>
+      <span>должностей <b>${(n.positions || []).length}</b></span></div>
+    ${pos.length ? `<div class="pos">${pos.map(p => `<span>${esc(p)}</span>`).join("")}
+      ${n.positions.length > 4 ? `<span>+${n.positions.length - 4}</span>` : ""}</div>` : ""}
+  </div>`;
+}
+function structure() {
+  const st = DATA.structure || { before:[], after:[], links:[] };
+  const c = DATA.unit_counts || {};
+  $("#ustat").innerHTML = [
+    ["preserved","сохранено"],["transformed","преобразовано"],
+    ["created","создано"],["abolished","упразднено"]
+  ].map(([k, l]) =>
+    `<div><b style="color:${UST[k][1]}">${c[k] ?? 0}</b><span>${l}</span></div>`).join("");
+  $("#col-b").innerHTML = st.before.map(unitCard).join("") ||
+    `<p class="empty">Подразделения не распознаны.</p>`;
+  $("#col-a").innerHTML = st.after.map(unitCard).join("") ||
+    `<p class="empty">Подразделения не распознаны.</p>`;
+  $("#cnt-u").textContent = st.before.length + st.after.length;
+
+  $("#stage").onclick = e => {
+    const u = e.target.closest(".unit"); if (!u) return;
+    const id = u.dataset.u;
+    QUERY = ""; $("#q").value = "";
+    $$(".unit").forEach(x => x.classList.toggle("dim", x.dataset.u !== id));
+    highlight(id);
+  };
+  $("#stage").ondblclick = () => { $$(".unit").forEach(x => x.classList.remove("dim")); highlight(null) };
+  requestAnimationFrame(wires);
+}
+function wires() {
+  const svg = $("#wires"), stage = $("#stage");
+  if (!svg || !DATA?.structure) return;
+  const box = stage.getBoundingClientRect();
+  const at = el => { const r = el.getBoundingClientRect();
+    return { l:r.left - box.left, r:r.right - box.left, y:r.top - box.top + r.height / 2 } };
+  const find = (id, side) => stage.querySelector(`.unit[data-u="${CSS.escape(id)}"][data-side="${side}"]`);
+  const parts = [];
+  for (const l of DATA.structure.links) {
+    const a = find(l.from, "before"), b = find(l.to, "after");
+    if (!a || !b) continue;
+    const p = at(a), q = at(b), dx = (q.l - p.r) / 2;
+    const col = UST[l.status]?.[1] || "var(--fg3)";
+    parts.push(`<path d="M${p.r} ${p.y} C${p.r + dx} ${p.y}, ${q.l - dx} ${q.y}, ${q.l} ${q.y}"
+      stroke="${col}" stroke-width="1.6" opacity=".55" data-link="${esc(l.from)}"></path>`);
+  }
+  // упразднённое: линия обрывается точкой
+  for (const n of DATA.structure.before.filter(x => x.status === "abolished")) {
+    const a = find(n.id, "before"); if (!a) continue;
+    const p = at(a);
+    parts.push(`<path class="stub" d="M${p.r} ${p.y} h44" stroke="var(--c1)" stroke-width="1.6" opacity=".7" data-link="${esc(n.id)}"></path>
+      <circle cx="${p.r + 50}" cy="${p.y}" r="3.5" fill="var(--c1)" opacity=".85" data-link="${esc(n.id)}"></circle>`);
+  }
+  // созданное: линия начинается точкой
+  for (const n of DATA.structure.after.filter(x => x.status === "created")) {
+    const b = find(n.id, "after"); if (!b) continue;
+    const q = at(b);
+    parts.push(`<path class="stub" d="M${q.l - 44} ${q.y} h44" stroke="var(--brand)" stroke-width="1.6" opacity=".7" data-link="${esc(n.id)}"></path>
+      <circle cx="${q.l - 50}" cy="${q.y}" r="3.5" fill="var(--brand)" opacity=".85" data-link="${esc(n.id)}"></circle>`);
+  }
+  svg.innerHTML = parts.join("");
+}
+function highlight(id) {
+  $$("#wires [data-link]").forEach(el =>
+    el.classList.toggle("fade", !!id && el.dataset.link !== id));
+  if (id) { QUERY = id; rows(); $("#q").value = "" } else { QUERY = ""; rows() }
+}
+addEventListener("resize", () => requestAnimationFrame(wires), { passive:true });
 
 function quote(e, key) {
   const side = e.doc_id === "before" ? "редакция «до»" : "редакция «после»";
@@ -654,6 +788,7 @@ function quote(e, key) {
 function match(f) {
   if (!QUERY) return true;
   const q = QUERY.toLowerCase();
+  if ((f.units || []).some(u => String(u).toLowerCase() === q)) return true;
   return f.statement.toLowerCase().includes(q) ||
          (TYPE[f.type] || "").toLowerCase().includes(q) ||
          f.evidence.some(e => e.clause.includes(q) || e.quote.toLowerCase().includes(q));

@@ -12,7 +12,7 @@ from orgsolvency.detect import run as detect
 from orgsolvency.verify import check
 from orgsolvency.score import score
 
-BASELINE_RECALL = 0.47   # текущий рубеж; поднимать вместе с улучшениями
+BASELINE_RECALL = 0.55   # текущий рубеж; поднимать вместе с улучшениями
 
 fails = []
 
@@ -33,7 +33,11 @@ bad_spans = [c.number for c in before if btext[c.span[0]:c.span[1]] != c.text]
 bad_spans += [c.number for c in after if atext[c.span[0]:c.span[1]] != c.text]
 expect(not bad_spans, f"смещения совпадают с текстом ({len(bad_spans)} расхождений)")
 
-findings = detect(before, after)
+from orgsolvency.units import compare as compare_units
+units = compare_units(before, after)
+expect(sum(units["counts"].values()) > 0,
+       f"подразделения сопоставлены: {units['counts']}")
+findings = units["findings"] + detect(before, after)
 ok, rejected = check(findings, {before[0].doc_id: btext, after[0].doc_id: atext})
 expect(not rejected, f"все цитаты дословны ({len(rejected)} отклонено)")
 expect(all(f["evidence"] for f in ok), "каждый вывод несёт хотя бы одну цитату")
