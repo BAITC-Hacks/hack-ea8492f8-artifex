@@ -45,5 +45,14 @@ expect(not s["violations"],
 expect(s["recall"] >= BASELINE_RECALL,
        f"полнота {s['recall']:.0%} ≥ рубежа {BASELINE_RECALL:.0%}")
 
+from webapp.server import demo as web_demo
+d = web_demo()
+expect(bool(d["summary"]["headline"]), f"заключение: «{d['summary']['headline']}»")
+expect(d["rejected"] == 0, f"веб-прогон: цитат отклонено {d['rejected']}")
+expect(all(f["evidence"] for f in d["findings"]),
+       "каждый вывод в интерфейсе имеет подтверждающий источник")
+expect(len(d["summary"]["narrative"]) > 0,
+       f"заключение содержит {len(d['summary']['narrative'])} утверждений")
+
 print(f"\n  провалов: {len(fails)}")
 sys.exit(1 if fails else 0)
