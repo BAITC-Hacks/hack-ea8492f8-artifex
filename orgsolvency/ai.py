@@ -14,9 +14,11 @@
 
 Включение:
 
-    export ARTIFEX_AI=anthropic
-    export ARTIFEX_AI_KEY=sk-...
+    export ARTIFEX_AI_KEY=sk-...          # провайдер по умолчанию — OpenAI
     python3 webapp/server.py
+
+Модель по умолчанию — gpt-4o-mini, меняется через ARTIFEX_AI_MODEL.
+Anthropic подключается через ARTIFEX_AI=anthropic.
 
 Без переменных окружения работает лексический слой, и это штатный режим,
 а не деградация.
@@ -125,7 +127,8 @@ _provider = None
 def provider() -> Provider:
     global _provider
     if _provider is None:
-        kind = os.environ.get("ARTIFEX_AI", "none").lower()
+        # По умолчанию — OpenAI: достаточно задать ARTIFEX_AI_KEY.
+        kind = os.environ.get("ARTIFEX_AI", "openai").lower()
         key = os.environ.get("ARTIFEX_AI_KEY", "")
         default_model = ("claude-sonnet-5" if kind == "anthropic" else "gpt-4o-mini")
         model = os.environ.get("ARTIFEX_AI_MODEL", default_model)
