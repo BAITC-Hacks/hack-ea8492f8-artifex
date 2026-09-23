@@ -9,6 +9,7 @@
 import argparse
 import json
 import tempfile
+import time
 import sys
 import webbrowser
 from email.parser import BytesParser
@@ -24,7 +25,8 @@ from orgsolvency.core import parse_text                      # noqa: E402
 from orgsolvency.ingest import read_docx, CLAUSE_RE          # noqa: E402
 from orgsolvency.detect import run as detect                 # noqa: E402
 from orgsolvency.verify import check                         # noqa: E402
-from orgsolvency.summary import summarize                    # noqa: E402
+from orgsolvency.summary import (summarize, enrich,          # noqa: E402
+                                 by_consequence)
 from orgsolvency.ai import status as ai_status               # noqa: E402
 
 PAGE = ROOT / "webapp" / "index.html"
@@ -68,22 +70,42 @@ def build(side_files, doc_id, title):
 
 
 def analyze(before_files, after_files):
-    bdoc, before = build(before_files, "before", "Редакция «до»")
-    adoc, after = build(after_files, "after", "Редакция «после»")
+    """Этапы замеряются по-настоящему: интерфейс показывает фактическое время,
+    а не анимацию, изображающую работу."""
+    timings = []
+
+    def phase(name, fn):
+        t0 = time.perf_counter()
+        out = fn()
+        timings.append({"name": name, "ms": round((time.perf_counter() - t0) * 1000)})
+        return out
+
+    bdoc, before = phase("Разбор пунктов «до»",
+                         lambda: build(before_files, "before", "Редакция «до»"))
+    adoc, after = phase("Разбор пунктов «после»",
+                        lambda: build(after_files, "after", "Редакция «после»"))
     if not before or not after:
         raise ValueError("Не удалось выделить ни одного пронумерованного пункта. "
                          "Проверьте, что в документах есть нумерация вида «5.6.3.».")
 
-    findings = detect(before, after)
-    findings, rejected = check(findings, {"before": bdoc["text"],
-                                          "after": adoc["text"]})
+    findings = phase("Сопоставление функций", lambda: detect(before, after))
+    findings, rejected = phase(
+        "Контроль дословности цитат",
+        lambda: check(findings, {"before": bdoc["text"], "after": adoc["text"]}))
+    findings = enrich(findings)
     titles = {"before": bdoc["title"], "after": adoc["title"]}
+    summary = phase("Сборка заключения",
+                    lambda: summarize(findings, before, after, titles))
+    summary["by_consequence"] = by_consequence(findings)
+
     return {
-        "summary": summarize(findings, before, after, titles),
+        "summary": summary,
         "findings": findings,
         "documents": {"before": bdoc, "after": adoc},
         "rejected": len(rejected),
         "engine": ai_status(),
+        "timings": timings,
+        "total_ms": sum(t["ms"] for t in timings),
     }
 
 
