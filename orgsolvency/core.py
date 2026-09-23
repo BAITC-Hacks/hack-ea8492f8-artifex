@@ -126,10 +126,12 @@ class Clause:
         return hashlib.sha1(self.text.encode()).hexdigest()[:12]
 
 
-def parse(path: str) -> list:
-    """Текст → список пунктов. Заголовок раздела становится scope дочерних пунктов."""
-    raw = open(path, encoding="utf-8").read()
-    doc_id = "unknown"
+def parse_text(raw: str, doc_id: str = "unknown") -> list:
+    """Текст → список пунктов. Заголовок раздела становится scope дочерних пунктов.
+
+    Смещения считаются по переданной строке, поэтому вызывающий обязан
+    использовать ту же строку как источник для контроля цитат.
+    """
     for line in raw.splitlines():
         if line.startswith("# doc_id:"):
             doc_id = line.split(":", 1)[1].strip()
@@ -163,6 +165,20 @@ def parse(path: str) -> list:
                               (start + col, start + col + len(text)),
                               scope, chapter))
     return clauses
+
+
+def load(path: str):
+    """Файл (.docx или .txt) → (пункты, текст, отчёт о надёжности якорей)."""
+    from .ingest import read
+    import os
+    text, report = read(path)
+    doc_id = os.path.splitext(os.path.basename(path))[0]
+    return parse_text(text, doc_id), text, report
+
+
+def parse(path: str) -> list:
+    """Совместимость: только пункты."""
+    return load(path)[0]
 
 
 def index(clauses: list) -> dict:
